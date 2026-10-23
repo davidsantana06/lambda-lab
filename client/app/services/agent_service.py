@@ -78,6 +78,13 @@ listas e dicionários com chaves de texto). Use `print` só para diagnóstico.
 espaço; correções feitas, se houver.
 - `duration_in_ms` mede só a chamada de `solve`, e `peak_memory_in_kb` inclui \
 cerca de 9 MB do próprio interpretador Python.
+
+## Formatação
+
+- Use apenas Markdown. Nunca use LaTeX, nem `$` como delimitador de fórmulas.
+- Escreva complexidades em código inline, como `O(n log n)`, e o resto da \
+matemática em texto simples ou Unicode (n², log n).
+- Coloque o código em blocos ```python.
 """
 
 _STEP_LIMIT_ANSWER = (
