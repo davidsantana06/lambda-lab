@@ -1,0 +1,146 @@
+[
+  {
+    "id": "two-sum",
+    "difficulty": "fácil",
+    "problem": "Encontre os índices de dois números distintos da lista cuja soma é igual ao alvo. Retorne os índices em ordem crescente.",
+    "parameters": {"numbers": [2, 7, 11, 15], "target": 9},
+    "expected_output": [0, 1],
+    "reference_complexity": {"time": "O(n)", "space": "O(n)"}
+  },
+  {
+    "id": "valid-palindrome",
+    "difficulty": "fácil",
+    "problem": "Verifique se o texto é um palíndromo, considerando apenas letras e dígitos e ignorando a diferença entre maiúsculas e minúsculas.",
+    "parameters": {"text": "A man, a plan, a canal: Panama"},
+    "expected_output": true,
+    "reference_complexity": {"time": "O(n)", "space": "O(1)"}
+  },
+  {
+    "id": "anagram",
+    "difficulty": "fácil",
+    "problem": "Verifique se as duas frases são anagramas uma da outra, ignorando espaços e a diferença entre maiúsculas e minúsculas.",
+    "parameters": {"first": "Dormitory", "second": "Dirty room"},
+    "expected_output": true,
+    "reference_complexity": {"time": "O(n)", "space": "O(1), pois o alfabeto é fixo"}
+  },
+  {
+    "id": "valid-parentheses",
+    "difficulty": "fácil",
+    "problem": "Verifique se a sequência de parênteses, colchetes e chaves está balanceada e corretamente aninhada.",
+    "parameters": {"text": "([)]"},
+    "expected_output": false,
+    "reference_complexity": {"time": "O(n)", "space": "O(n)"}
+  },
+  {
+    "id": "binary-search",
+    "difficulty": "fácil",
+    "problem": "Encontre o índice do alvo na lista ordenada em ordem crescente, ou retorne -1 se ele não estiver na lista.",
+    "parameters": {"numbers": [1, 3, 5, 7, 9, 11, 13, 15], "target": 11},
+    "expected_output": 5,
+    "reference_complexity": {"time": "O(log n)", "space": "O(1)"}
+  },
+  {
+    "id": "maximum-subarray",
+    "difficulty": "média",
+    "problem": "Encontre a maior soma possível de um subvetor contíguo e não vazio da lista.",
+    "parameters": {"numbers": [-2, 1, -3, 4, -1, 2, 1, -5, 4]},
+    "expected_output": 6,
+    "reference_complexity": {"time": "O(n)", "space": "O(1)"}
+  },
+  {
+    "id": "fibonacci",
+    "difficulty": "média",
+    "problem": "Calcule o n-ésimo número de Fibonacci, com F(0) = 0 e F(1) = 1.",
+    "parameters": {"n": 100},
+    "expected_output": 354224848179261915075,
+    "reference_complexity": {"time": "O(n)", "space": "O(1)"}
+  },
+  {
+    "id": "merge-intervals",
+    "difficulty": "média",
+    "problem": "Una os intervalos que se sobrepõem e retorne a lista resultante, ordenada pelo início de cada intervalo.",
+    "parameters": {"intervals": [[1, 3], [2, 6], [8, 10], [15, 18]]},
+    "expected_output": [[1, 6], [8, 10], [15, 18]],
+    "reference_complexity": {"time": "O(n log n)", "space": "O(n)"}
+  },
+  {
+    "id": "coin-change",
+    "difficulty": "média",
+    "problem": "Calcule o menor número de moedas necessário para formar o valor, podendo usar cada tipo de moeda quantas vezes quiser. Retorne -1 se não for possível.",
+    "parameters": {"coins": [1, 2, 5], "amount": 11},
+    "expected_output": 3,
+    "reference_complexity": {"time": "O(amount × len(coins))", "space": "O(amount)"}
+  },
+  {
+    "id": "longest-increasing-subsequence",
+    "difficulty": "média",
+    "problem": "Calcule o comprimento da maior subsequência estritamente crescente da lista.",
+    "parameters": {"numbers": [10, 9, 2, 5, 3, 7, 101, 18]},
+    "expected_output": 4,
+    "reference_complexity": {"time": "O(n log n)", "space": "O(n)"}
+  },
+  {
+    "id": "number-of-islands",
+    "difficulty": "média",
+    "problem": "Conte as ilhas da grade, em que 1 é terra e 0 é água. Uma ilha é formada por células de terra ligadas na horizontal ou na vertical.",
+    "parameters": {"grid": [[1, 1, 0, 0, 0], [1, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 1]]},
+    "expected_output": 3,
+    "reference_complexity": {"time": "O(linhas × colunas)", "space": "O(linhas × colunas)"}
+  },
+  {
+    "id": "course-schedule",
+    "difficulty": "média",
+    "problem": "Há num_courses cursos, numerados de 0 a num_courses - 1. Cada par [a, b] em prerequisites indica que o curso b precisa ser concluído antes do curso a. Verifique se é possível concluir todos os cursos.",
+    "parameters": {"num_courses": 4, "prerequisites": [[1, 0], [2, 1], [0, 2], [3, 0]]},
+    "expected_output": false,
+    "reference_complexity": {"time": "O(V + E), com V cursos e E pré-requisitos", "space": "O(V + E)"}
+  },
+  {
+    "id": "longest-common-subsequence",
+    "difficulty": "média",
+    "problem": "Calcule o comprimento da maior subsequência comum entre os dois textos.",
+    "parameters": {"first": "ABCBDAB", "second": "BDCABA"},
+    "expected_output": 4,
+    "reference_complexity": {"time": "O(m × n)", "space": "O(m × n), ou O(min(m, n)) guardando só duas linhas"}
+  },
+  {
+    "id": "edit-distance",
+    "difficulty": "difícil",
+    "problem": "Calcule a distância de edição (Levenshtein) entre as duas palavras, isto é, o menor número de inserções, remoções ou substituições de caracteres que transforma a primeira na segunda.",
+    "parameters": {"source": "kitten", "target": "sitting"},
+    "expected_output": 3,
+    "reference_complexity": {"time": "O(m × n)", "space": "O(min(m, n)) guardando só duas linhas"}
+  },
+  {
+    "id": "knapsack",
+    "difficulty": "difícil",
+    "problem": "Resolva o problema da mochila 0/1: escolha itens, cada um no máximo uma vez, para maximizar o valor total sem ultrapassar a capacidade. Retorne o maior valor possível.",
+    "parameters": {"weights": [1, 3, 4, 5], "values": [1, 4, 5, 7], "capacity": 7},
+    "expected_output": 9,
+    "reference_complexity": {"time": "O(n × capacity)", "space": "O(capacity)"}
+  },
+  {
+    "id": "shortest-path",
+    "difficulty": "difícil",
+    "problem": "Calcule a menor distância entre os vértices source e target em um grafo não direcionado com pesos positivos, em que cada aresta é [u, v, peso]. Retorne -1 se não houver caminho.",
+    "parameters": {"num_vertices": 6, "edges": [[0, 1, 7], [0, 2, 9], [0, 5, 14], [1, 2, 10], [1, 3, 15], [2, 3, 11], [2, 5, 2], [3, 4, 6], [4, 5, 9]], "source": 0, "target": 4},
+    "expected_output": 20,
+    "reference_complexity": {"time": "O((V + E) log V) com Dijkstra e heap", "space": "O(V + E)"}
+  },
+  {
+    "id": "n-queens",
+    "difficulty": "difícil",
+    "problem": "Conte de quantas maneiras é possível posicionar n rainhas em um tabuleiro n × n sem que nenhuma ataque outra.",
+    "parameters": {"n": 8},
+    "expected_output": 92,
+    "reference_complexity": {"time": "O(n!) com backtracking e poda", "space": "O(n)"}
+  },
+  {
+    "id": "count-primes",
+    "difficulty": "difícil",
+    "problem": "Conte quantos números primos existem menores ou iguais a n.",
+    "parameters": {"n": 2000000},
+    "expected_output": 148933,
+    "reference_complexity": {"time": "O(n log log n) com o crivo de Eratóstenes", "space": "O(n)"}
+  }
+]
