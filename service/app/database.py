@@ -13,8 +13,7 @@ engine = create_engine(
 )
 
 
-# SQLite gives a column declared as JSON numeric affinity, which silently turns
-# integers beyond 64 bits into floats. Declaring it as TEXT keeps the JSON intact.
+# No SQLite, JSON tem afinidade numérica e converte inteiros grandes em float.
 @compiles(JSON, "sqlite")
 def compile_json_as_text(type_: JSON, compiler: TypeCompiler, **kwargs: Any) -> str:
     return "TEXT"

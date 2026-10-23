@@ -67,7 +67,7 @@ def load_report(restart: bool) -> dict[str, Any]:
     with open(_REPORT_PATH, encoding="utf-8") as file:
         report = json.load(file)
 
-    # Scores from another model setup must not mix with new ones.
+    # Notas de outra configuração de modelos não se misturam às novas.
     if report["configuration"] != configuration:
         raise SystemExit(
             f"{_REPORT_PATH} was scored with {report['configuration']}, but the "
@@ -91,7 +91,7 @@ def save_report(report: dict[str, Any], cases: list[dict[str, Any]]) -> None:
         json.dump(content, file, ensure_ascii=False, indent=2)
         file.write("\n")
 
-    # The container runs as root; give the report to the owner of the folder.
+    # O contêiner roda como root; o relatório fica com o dono da pasta.
     folder = os.stat(os.path.dirname(_REPORT_PATH))
     os.chown(temporary_path, folder.st_uid, folder.st_gid)
     os.replace(temporary_path, _REPORT_PATH)

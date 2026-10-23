@@ -15,10 +15,9 @@ from services.tools_service import call_tool, list_tools
 ToolCaller = Callable[[str, dict[str, Any]], Awaitable[dict[str, Any]]]
 
 _MAX_FIX_ATTEMPTS = 3
-# One attempt takes validate, create and execute, plus up to five get_execution
-# polls when a run outlasts the wait inside execute_algorithm.
+# Cada tentativa: validar, salvar, executar e até cinco consultas a get_execution.
 _MAX_STEPS_PER_ATTEMPT = 8
-# Two extra steps leave room for looking around first and for the final answer.
+# Dois passos extras: uma consulta inicial e a resposta final.
 _MAX_AGENT_STEPS = _MAX_FIX_ATTEMPTS * _MAX_STEPS_PER_ATTEMPT + 2
 
 _SYSTEM_PROMPT = f"""\
@@ -88,9 +87,8 @@ _STEP_LIMIT_ANSWER = (
 _EMPTY_ANSWER = "O modelo não devolveu uma resposta. Tente perguntar de novo."
 
 
-# Answers one message and extends the chat history in place. Also returns the
-# similarity of the cached question when the answer came from the cache. Only the
-# first message of a chat uses the cache, and only answers without tools are stored.
+# Responde e estende o histórico; devolve a similaridade se a resposta veio do cache.
+# Só a primeira mensagem do chat consulta o cache, que guarda respostas sem ferramentas.
 async def answer_question(
     question: str,
     history: list[dict[str, Any]],

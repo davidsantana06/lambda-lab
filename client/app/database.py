@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Session, create_engine
 import os
 
 
-# Not DATABASE_URL: Chainlit reads that one to enable its PostgreSQL chat history.
+# DATABASE_URL não serve: o Chainlit a usa para ligar o histórico em PostgreSQL.
 engine = create_engine(
     os.environ["CACHE_DATABASE_URL"],
     connect_args={"check_same_thread": False},

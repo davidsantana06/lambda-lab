@@ -12,7 +12,7 @@ import re
 LLM_MODEL = os.environ["LLM_MODEL"]
 LLM_REASONING_EFFORT = os.environ.get("LLM_REASONING_EFFORT", "low")
 EMBEDDING_MODEL = os.environ["EMBEDDING_MODEL"]
-# Rate limited (429) or overloaded (503): both usually pass after a short wait.
+# 429 (limite de requisições) e 503 (sobrecarga) costumam passar com uma breve espera.
 TRANSIENT_STATUS_CODES = (429, 503)
 
 _GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
@@ -22,8 +22,7 @@ _MAX_RETRY_WAIT_IN_SECONDS = 60
 
 _client = AsyncOpenAI(api_key=os.environ["GEMINI_API_KEY"], base_url=_GEMINI_BASE_URL)
 
-# Input, output and reasoning tokens of every chat completion in this process,
-# so the judge can tell what each case cost.
+# Tokens de entrada, saída e raciocínio de cada chamada, para o juiz medir o custo.
 token_usage: Counter[str] = Counter()
 
 Response = TypeVar("Response")
@@ -56,8 +55,7 @@ async def create_embedding(text: str) -> list[float]:
     return response.data[0].embedding
 
 
-# A wait longer than the cap means the daily quota or the balance is gone, so
-# waiting will not help.
+# Espera acima do teto indica cota diária ou saldo esgotado, e esperar não resolve.
 def can_retry_request(error: APIStatusError) -> bool:
     return (
         error.status_code in TRANSIENT_STATUS_CODES
@@ -65,9 +63,7 @@ def can_retry_request(error: APIStatusError) -> bool:
     )
 
 
-# The free tier limits requests per minute, which a single answer with several
-# tool calls can exceed, and busy models answer 503. The SDK's own retries give
-# up within seconds, so this waits for the window Gemini reports instead.
+# Espera a janela indicada pelo Gemini; as retentativas do SDK desistem em segundos.
 async def _request_with_retries(
     send_request: Callable[[], Awaitable[Response]],
 ) -> Response:
@@ -95,7 +91,7 @@ def _record_token_usage(usage: Optional[CompletionUsage]) -> None:
 
     token_usage["input"] += usage.prompt_tokens
     token_usage["output"] += usage.completion_tokens
-    # Gemini counts thinking tokens only in the total.
+    # O Gemini só inclui os tokens de raciocínio no total.
     token_usage["reasoning"] += (
         usage.total_tokens - usage.prompt_tokens - usage.completion_tokens
     )

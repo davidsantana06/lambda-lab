@@ -30,9 +30,7 @@ _REPORT_FIELDS = (
     "peak_memory_in_kb",
 )
 
-# Runs inside the child process. It reads the payload from stdin, keeps the
-# algorithm's prints in a buffer and writes a JSON report to a private copy of
-# stdout, so nothing the algorithm prints can corrupt the report.
+# Script do processo filho; o relatório sai por uma cópia do stdout, longe dos prints.
 _RUNNER_SOURCE_CODE = r"""
 import contextlib
 import io
@@ -45,9 +43,7 @@ import time
 import traceback
 
 
-# A process started by the service inherits its memory high-water mark, so
-# getrusage would never report less than the service's own peak. Forking once
-# more gives the algorithm a fresh process whose peak is its own.
+# Novo fork para que o getrusage não herde o pico de memória do serviço.
 worker_pid = os.fork()
 if worker_pid:
     _, wait_status = os.waitpid(worker_pid, 0)
@@ -107,8 +103,7 @@ if len(stdout) > stdout_limit_in_chars:
 
 report["stdout"] = stdout
 
-# With the default digit limit back, integers too long for other JSON parsers
-# fall back to repr like any other non-serializable result.
+# Com o limite padrão de dígitos de volta, inteiros longos demais caem no repr.
 sys.set_int_max_str_digits(sys.int_info.default_max_str_digits)
 try:
     report_text = json.dumps(report, allow_nan=False)
