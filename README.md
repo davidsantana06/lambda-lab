@@ -55,26 +55,24 @@ Servidor FastMCP com transporte `streamable-http`, na porta 9001 e no caminho `/
 
 ### 💬 `client/`
 
-Chat Chainlit na porta 9002. Conversa com o Gemini pelo endpoint compatível com a OpenAI (SDK `openai`) e com o servidor MCP pelo cliente FastMCP, em `http://lambda-lab-mcp-server:9001/mcp`. O cache semântico fica em `/data/client.db`.
+Chat Chainlit na porta 9002. Conversa com o Gemini pelo endpoint compatível com a OpenAI (SDK `openai`) e com o servidor MCP pelo cliente FastMCP, em `http://lambda-lab-mcp-server:9001/mcp`. O cache semântico fica no ChromaDB, em `/data/cache` (volume `chromadata`).
 
-| Arquivo                     | Responsabilidade                                                 |
-| --------------------------- | ---------------------------------------------------------------- |
-| `__main__.py`               | Sobe o Chainlit em `0.0.0.0:9002`                                |
-| `controllers.py`            | Handlers do Chainlit, que exibem cada chamada de ferramenta      |
-| `database.py`               | Engine e sessão do cache, a partir de `CACHE_DATABASE_URL`       |
-| `models.py`                 | Tabela do cache semântico                                        |
-| `services/agent_service.py` | Motor de inferência: prompt de sistema e laço LLM–ferramentas    |
-| `services/llm_service.py`   | Chat e embeddings do Gemini, com novas tentativas em `429`/`503` |
-| `services/cache_service.py` | Busca e gravação no cache semântico                              |
-| `services/tools_service.py` | Cliente MCP                                                      |
-| `services/judge_service.py` | Prompt do juiz e leitura das notas                               |
-| `judge.py`                  | Script de avaliação LLM-as-a-Judge                               |
-| `judge_cases.json`          | Os 18 casos de avaliação                                         |
-| `chainlit.md`               | Tela de apresentação do chat                                     |
+| Arquivo                     | Responsabilidade                                              |
+| --------------------------- | ------------------------------------------------------------- |
+| `__main__.py`               | Sobe o Chainlit em `0.0.0.0:9002`                             |
+| `controllers.py`            | Handlers do Chainlit, que exibem cada chamada de ferramenta   |
+| `services/agent_service.py` | Motor de inferência: prompt de sistema e laço LLM–ferramentas |
+| `services/llm_service.py`   | Chat com o Gemini, com novas tentativas em `429`/`503`        |
+| `services/cache_service.py` | Embeddings locais e coleção do cache semântico no ChromaDB    |
+| `services/tools_service.py` | Cliente MCP                                                   |
+| `services/judge_service.py` | Prompt do juiz e leitura das notas                            |
+| `judge.py`                  | Script de avaliação LLM-as-a-Judge                            |
+| `judge_cases.json`          | Os 18 casos de avaliação                                      |
+| `chainlit.md`               | Tela de apresentação do chat                                  |
 
 O prompt de sistema orienta o agente a entender o problema e justificar a estratégia. Em seguida, ele escreve e valida a função `solve` e a salva e executa (com um exemplo pequeno, se o usuário não der parâmetros). Por fim, relata resultado, tempo, memória e complexidade e corrige o código em até 3 tentativas. Perguntas conceituais são respondidas sem ferramentas. O laço entre LLM e ferramentas tem no máximo 26 passos, e as chamadas usam `reasoning_effort` (`low`, por padrão).
 
-O cache semântico compara o embedding da pergunta com os já guardados por similaridade de cosseno. Acima do limiar (0,90, por padrão), a resposta vem do cache, e o chat mostra a similaridade. Só a primeira mensagem de cada chat é consultada, e só respostas dadas sem ferramentas são guardadas.
+O cache semântico gera o embedding da pergunta localmente, com o modelo multilíngue `paraphrase-multilingual-MiniLM-L12-v2` do sentence-transformers, sem chamar o Gemini. Uma coleção do ChromaDB guarda pergunta, embedding e resposta e devolve a distância de cosseno, convertida em similaridade (1 − distância). Acima do limiar (0,90, por padrão), a resposta vem do cache, e o chat mostra a similaridade. Só a primeira mensagem de cada chat é consultada, e só respostas dadas sem ferramentas são guardadas.
 
 ## 🛠️ Instalação e execução
 
@@ -122,7 +120,6 @@ cp .env.example .env
 | `GEMINI_API_KEY`             | Chave da API do Gemini                                      |
 | `LLM_MODEL`                  | Modelo do agente, como `gemini-3.5-flash`                   |
 | `LLM_REASONING_EFFORT`       | `low` (padrão), `medium` ou `high`                          |
-| `EMBEDDING_MODEL`            | Modelo de embeddings, como `gemini-embedding-001`           |
 | `JUDGE_MODEL`                | Modelo do juiz, de preferência um Pro                       |
 | `CACHE_SIMILARITY_THRESHOLD` | Similaridade mínima para responder do cache (padrão `0.90`) |
 
@@ -133,6 +130,8 @@ A chave deve ser obtida através do [Google AI Studio](https://aistudio.google.c
 ```bash
 docker compose up -d --build
 ```
+
+O build baixa o PyTorch para CPU e o modelo de embeddings do cache, por isso leva alguns minutos e gera uma imagem de cerca de 3,5 GB. Depois, o cliente sobe em poucos segundos, sem acessar a rede para carregar o modelo.
 
 Abra `http://localhost:9002` e descreva um problema, como "Encontre os índices dos dois números da lista [2, 7, 11, 15] que somam 9". Cada chamada de ferramenta aparece na conversa como uma etapa, com argumentos e resultado.
 
@@ -158,7 +157,8 @@ O relatório registra os modelos usados. Se `LLM_MODEL`, `LLM_REASONING_EFFORT` 
 - O sandbox não impede o código de ler arquivos do contêiner nem de acessar a rede, então não é adequado para código não confiável.
 - Execuções que estouram o tempo ficam sem pico de memória.
 - O `stdout` é cortado em 10.000 caracteres.
-- O limiar do cache semântico (0,90) não foi calibrado.
+- O limiar do cache semântico (0,90) foi calibrado com cerca de 50 pares de perguntas. Reformulações leves usam o cache, mas sinônimos costumam ficar abaixo do limiar, e perguntas que só trocam o nome do algoritmo, como sobre merge sort e heap sort, podem receber a resposta uma da outra.
+- Trocar o modelo de embeddings exige alterar o `cache_service.py` e o `Dockerfile` do cliente e reconstruir a imagem.
 - Não há autenticação.
 - O histórico do chat fica na memória da sessão e se perde ao recarregar a página ou reiniciar o cliente.
 - Cada correção vira um novo algoritmo, e o banco só é limpo com `down -v`.
@@ -178,4 +178,4 @@ docker compose -f mcp-server/docker-compose.yml down -v --rmi local
 docker compose -f service/docker-compose.yml down -v --rmi local
 ```
 
-O `-v` apaga os volumes (algoritmos, execuções e cache), e o `--rmi local` remove as imagens construídas, mantendo a base `python:3.12-slim`.
+O `-v` apaga os volumes (algoritmos, execuções e cache), e o `--rmi local` remove as imagens construídas, com o modelo de embeddings, mantendo a base `python:3.12-slim`.
