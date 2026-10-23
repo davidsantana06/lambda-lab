@@ -1,0 +1,571 @@
+{
+  "configuration": {
+    "agent_model": "gemini-3.5-flash",
+    "agent_reasoning_effort": "low",
+    "judge_model": "gemini-3.6-flash"
+  },
+  "summary": {
+    "scored_cases": 18,
+    "total_cases": 18,
+    "averages": {
+      "correctness": 4.94,
+      "efficiency": 4.94,
+      "clarity": 4.89,
+      "overall": 4.92
+    },
+    "tokens": {
+      "agent": {
+        "input": 265874,
+        "output": 19286,
+        "reasoning": 2628
+      },
+      "judge": {
+        "input": 19907,
+        "output": 1631,
+        "reasoning": 6958
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "two-sum",
+      "difficulty": "fácil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O sistema resolveu o problema corretamente utilizando uma tabela hash, obtendo a saída exata esperada. A complexidade de tempo e espaço foi O(n), igual à referência ideal. A resposta é muito clara, organizada e apresenta todas as seções solicitadas em português do Brasil.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 11.4,
+      "tokens": {
+        "agent": {
+          "input": 13786,
+          "output": 776,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 977,
+          "output": 84,
+          "reasoning": 333
+        }
+      },
+      "judged_at": "2026-10-23T23:37:42+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara resolver o problema do *Two Sum* de forma eficiente, utilizei uma **tabela hash (dicionário)**. \n\nAo iterar pela lista de números, calculamos o complemento necessário para atingir o alvo (`complemento = alvo - número_atual`). Verificamos se esse complemento já foi armazenado no dicionário:\n- Se já existir, encontramos o par desejado e retornamos os índices em ordem crescente.\n- Se não existir, salvamos o número atual e seu índice no dicionário para consultas futuras.\n\nEssa abordagem garante tempo linear `O(n)`, superando a força bruta de comparar todos os pares `O(n²)`.\n\n---\n\n### Código em Python\n\n```python\ndef solve(numbers: list[int], target: int) -> list[int]:\n    \"\"\"\n    Find indices of two numbers that add up to target.\n    Returns the 0-based indices in ascending order.\n    \"\"\"\n    seen = {}\n    for i, num in enumerate(numbers):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n    return []\n```\n\n---\n\n### Resultado da Execução\n\n- **Entrada**: `{\"numbers\": [2, 7, 11, 15], \"target\": 9}`\n- **Resultado**: `[0, 1]`\n- **Tempo de execução**: `0.013 ms`\n- **Pico de memória**: `8920 KB` (~8.7 MB, incluindo a linha de base do interpretador Python)\n\n---\n\n### Análise de Complexidade\n\n- **Complexidade de Tempo**: `O(n)`, onde `n` é o número de elementos na lista. Realizamos no máximo uma passagem pela lista, e as operações de busca e inserção no dicionário têm custo médio `O(1)`.\n- **Complexidade de Espaço**: `O(n)`, no pior caso armazenamos até `n - 1` elementos no dicionário antes de encontrar o par."
+    },
+    {
+      "id": "valid-palindrome",
+      "difficulty": "fácil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 4,
+        "clarity": 5
+      },
+      "justification": "O resultado e o código estão corretos. A eficiência de espaço foi O(n) devido à criação da lista filtrada, enquanto a referência atinge O(1) com dois ponteiros, mas a solução continua sendo aceitável. A explicação e a estrutura da resposta estão excelentes e completas.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 11.7,
+      "tokens": {
+        "agent": {
+          "input": 13556,
+          "output": 641,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 895,
+          "output": 88,
+          "reasoning": 354
+        }
+      },
+      "judged_at": "2026-10-23T23:39:18+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara verificar se um texto é um palíndromo considerando apenas caracteres alfanuméricos e ignorando a diferença entre maiúsculas e minúsculas:\n1. **Filtragem e Normalização:** Percorremos o texto filtrando apenas os caracteres para os quais `char.isalnum()` é verdadeiro e os convertemos para minúsculas com `char.lower()`.\n2. **Comparação:** Verificamos se a lista de caracteres gerada é igual à sua inversão (`filtered_chars == filtered_chars[::-1]`).\n\nEssa abordagem é direta, legível e altamente eficiente para o tamanho típico de cadeias de caracteres.\n\n---\n\n### Código do Algoritmo\n\n```python\ndef solve(text: str) -> bool:\n    \"\"\"Check if the given string is a palindrome, considering only alphanumeric\n    characters and ignoring cases.\n    \"\"\"\n    filtered_chars = [char.lower() for char in text if char.isalnum()]\n    return filtered_chars == filtered_chars[::-1]\n```\n\n---\n\n### Resultado da Execução\n\n- **Entrada:** `{\"text\": \"A man, a plan, a canal: Panama\"}`\n- **Resultado:** `True`\n- **Tempo de Execução:** 0.006 ms\n- **Pico de Memória:** 9020 KB (inclui cerca de 9 MB do interpretador Python)\n\n---\n\n### Complexidade\n\n- **Complexidade de Tempo:** `O(n)`, onde `n` é o comprimento da string de entrada, pois percorremos o texto para filtrar e depois inverter/comparar a lista resultante.\n- **Complexidade de Espaço:** `O(n)` para armazenar a lista de caracteres filtrados."
+    },
+    {
+      "id": "anagram",
+      "difficulty": "fácil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O código resolve o problema corretamente ignorando espaços e diferenças de maiúsculas/minúsculas, obtendo a saída esperada. A complexidade de tempo O(n) é ideal e equivalente à de referência. A explicação e a apresentação dos resultados de execução estão completas e bem estruturadas.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 13.1,
+      "tokens": {
+        "agent": {
+          "input": 13832,
+          "output": 830,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 1007,
+          "output": 88,
+          "reasoning": 577
+        }
+      },
+      "judged_at": "2026-10-23T23:39:31+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara verificar se duas frases são anagramas ignorando espaços, pontuações e a diferença entre maiúsculas e minúsculas:\n1. **Normalização/Limpeza**: Convertemos ambas as frases para caracteres minúsculos e filtramos apenas os caracteres alfanuméricos (`isalnum()`), removendo espaços e pontuações.\n2. **Contagem de Frequências**: Utilizamos a estrutura de dados `collections.Counter` para contar a frequência de cada caractere nas frases limpas.\n3. **Comparação**: Duas cadeias de caracteres são anagramas se, e somente se, a contagem da frequência de todos os seus caracteres for idêntica.\n\nEssa abordagem com contagem de frequências roda em tempo linear em relação ao tamanho das frases, sendo mais eficiente do que realizar a ordenação dos caracteres (`O(n log n)`).\n\n---\n\n### Código\n\n```python\nfrom collections import Counter\n\ndef solve(first: str, second: str) -> bool:\n    \"\"\"\n    Checks if two phrases are anagrams of each other,\n    ignoring spaces and case sensitivity.\n    \"\"\"\n    clean_first = \"\".join(c.lower() for c in first if c.isalnum())\n    clean_second = \"\".join(c.lower() for c in second if c.isalnum())\n    return Counter(clean_first) == Counter(clean_second)\n```\n\n---\n\n### Resultado da Execução\n\n- **Entrada**: `{\"first\": \"Dormitory\", \"second\": \"Dirty room\"}`\n- **Resultado**: `True` (são anagramas)\n- **Tempo de execução**: `0.079 ms`\n- **Pico de memória**: `9068 KB` (~9.06 MB, que inclui o baseline do interpretador Python)\n\n---\n\n### Complexidade\n\n- **Tempo**: `O(n + m)`, onde `n` é o comprimento da primeira frase e `m` é o comprimento da segunda frase. A filtragem e a contagem com `Counter` percorrem cada caractere uma quantidade constante de vezes.\n- **Espaço**: `O(n + m)` para armazenar as strings filtradas e as tabelas de frequência de caracteres."
+    },
+    {
+      "id": "valid-parentheses",
+      "difficulty": "fácil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "A solução utiliza uma pilha de forma correta e eficiente para validar o aninhamento, produzindo a saída esperada `False`. As complexidades de tempo O(n) e espaço O(n) coincidem com a referência. A explicação do método, execução e complexidades é completa e bem estruturada em português.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 14.2,
+      "tokens": {
+        "agent": {
+          "input": 14744,
+          "output": 1063,
+          "reasoning": 271
+        },
+        "judge": {
+          "input": 1145,
+          "output": 92,
+          "reasoning": 396
+        }
+      },
+      "judged_at": "2026-10-23T23:39:45+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara verificar se os delimitadores (`()`, `[]`, `{}`) estão balanceados e corretamente aninhados, a estratégia ideal é o uso de uma **Pilha** (estrutura LIFO - *Last-In, First-Out*):\n\n1. **Iteração**: Percorremos a string caractere por caractere.\n2. **Abertura**: Se o caractere for um delimitador de abertura (`(`, `[`, `{`), ele é empilhado.\n3. **Fechamento**: Se for um caractere de fechamento (`)`, `]`, `}`):\n   - Verificamos se a pilha está vazia ou se o elemento no topo não corresponde ao delimitador de abertura equivalente. Nesses casos, a sequência é inválida (`False`).\n   - Caso corresponda, desempilhamos o elemento do topo.\n4. **Resultado**: Se ao final do texto a pilha estiver vazia, significa que todos os delimitadores abertos foram devidamente fechados na ordem correta (`True`); caso contrário, faltaram delimitadores para fechar (`False`).\n\nEsta abordagem é ótima para validação sintática e opera em tempo linear.\n\n---\n\n### Código\n\n```python\ndef solve(text: str) -> bool:\n    \"\"\"\n    Check if parentheses, brackets, and braces in the input text are balanced\n    and correctly nested using a stack data structure.\n    \"\"\"\n    stack = []\n    matching_bracket = {')': '(', ']': '[', '}': '{'}\n    opening_brackets = set(matching_bracket.values())\n\n    for char in text:\n        if char in opening_brackets:\n            stack.append(char)\n        elif char in matching_bracket:\n            if not stack or stack[-1] != matching_bracket[char]:\n                return False\n            stack.pop()\n\n    return len(stack) == 0\n```\n\n---\n\n### Resultado da Execução\n\n- **Entrada:** `{\"text\": \"([)]\"}`\n- **Resultado:** `False`\n- **Tempo de Execução:** `0.012 ms`\n- **Pico de Memória:** `9372 KB` (inclui ~9 MB da linha de base do interpretador Python)\n\nA sequência `\"([)]\"` não está corretamente aninhada porque o colchete `[` foi aberto depois do parêntese `(`, mas o parêntese `)` tenta fechar antes do colchete `]`.\n\n---\n\n### Complexidade\n\n- **Complexidade de Tempo:** `O(n)`, onde `n` é o comprimento do texto. Cada caractere é processado uma única vez e as operações de empilhar (`append`) e desempilhar (`pop`) levam tempo constante `O(1)`.\n- **Complexidade de Espaço:** `O(n)` no pior caso, pois a pilha armazena até `n` caracteres se todos forem delimitadores de abertura."
+    },
+    {
+      "id": "binary-search",
+      "difficulty": "fácil",
+      "scores": {
+        "correctness": 4,
+        "efficiency": 5,
+        "clarity": 3
+      },
+      "justification": "O resultado obtido está correto em relação à saída esperada, mas o código-fonte não foi exibido na resposta. A complexidade descrita reflete a busca binária ideal (tempo O(log n) e espaço O(1)). A clareza foi prejudicada pela ausência do código e do detalhamento prévio da estratégia adotada.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 13.4,
+      "tokens": {
+        "agent": {
+          "input": 14730,
+          "output": 831,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 755,
+          "output": 110,
+          "reasoning": 752
+        }
+      },
+      "judged_at": "2026-10-23T23:39:59+00:00",
+      "answer": "### Resultado da Execução\n\n- **Entrada:** `{\"numbers\": [1, 3, 5, 7, 9, 11, 13, 15], \"target\": 11}`\n- **Resultado obtido:** `5` (o número `11` está no índice `5` da lista)\n- **Tempo de execução (`duration_in_ms`):** `0.004 ms`\n- **Pico de memória (`peak_memory_in_kb`):** `8980 KB` (~8.77 MB, incluindo a linha de base do interpretador Python)\n\n---\n\n### Análise de Complexidade\n\n- **Complexidade de Tempo:** `O(log n)`, onde `n` é o número de elementos na lista `numbers`. A cada passo do loop, o espaço de busca é dividido pela metade.\n- **Complexidade de Espaço:** `O(1)`, pois utiliza apenas espaço adicional constante para os ponteiros `left`, `right` e `mid`."
+    },
+    {
+      "id": "maximum-subarray",
+      "difficulty": "média",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O sistema implementou corretamente o Algoritmo de Kadane, obtendo a saída esperada de forma perfeita. As complexidades de tempo O(n) e espaço O(1) estão alinhadas com a referência. A resposta é clara, organizada e traz todos os detalhes de execução.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 11.2,
+      "tokens": {
+        "agent": {
+          "input": 14051,
+          "output": 912,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 1036,
+          "output": 86,
+          "reasoning": 262
+        }
+      },
+      "judged_at": "2026-10-23T23:40:10+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara resolver o problema de encontrar a maior soma de um subvetor contíguo não vazio (conhecido como o *Maximum Subarray Problem*), utilizei o **Algoritmo de Kadane** (programação dinâmica).\n\nA ideia do algoritmo é percorrer a lista mantendo a maior soma contígua terminada no elemento atual (`current_max`) e a maior soma global vista até o momento (`max_so_far`). Para cada elemento `x`, decidimos se é melhor iniciar um novo subvetor a partir de `x` ou estender o subvetor anterior (`current_max + x`). Esta abordagem reduz a complexidade de força bruta (que seria `O(n²)` ou `O(n³)`) para uma única passagem linear `O(n)`, ideal para desempenho em listas de qualquer tamanho.\n\n---\n\n### Código\n\n```python\ndef solve(numbers: list[int]) -> int:\n    \"\"\"Find the maximum sum of a contiguous non-empty subarray using Kadane's algorithm.\"\"\"\n    if not numbers:\n        raise ValueError(\"The input list must not be empty.\")\n    \n    max_so_far = numbers[0]\n    current_max = numbers[0]\n    \n    for x in numbers[1:]:\n        current_max = max(x, current_max + x)\n        max_so_far = max(max_so_far, current_max)\n        \n    return max_so_far\n```\n\n---\n\n### Resultado da Execução\n\n- **Parâmetros de Entrada:** `{\"numbers\": [-2, 1, -3, 4, -1, 2, 1, -5, 4]}`\n- **Subvetor com maior soma:** `[4, -1, 2, 1]`\n- **Resultado:** `6`\n- **Tempo de Execução:** `0.013 ms`\n- **Pico de Memória:** `9104 KB` (~9 MB, incluindo a linha de base do interpretador Python)\n\n---\n\n### Complexidade\n\n- **Tempo:** `O(n)`, onde `n` é o número de elementos na lista, pois é feita uma única iteração sobre os dados.\n- **Espaço:** `O(1)`, já que utiliza apenas algumas variáveis auxiliares para armazenar os estados do algoritmo."
+    },
+    {
+      "id": "fibonacci",
+      "difficulty": "média",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O resultado gerado é idêntico à saída esperada e o código em Python implementa a solução de forma correta. As complexidades de tempo O(n) e espaço O(1) coincidem com a referência. A explicação do algoritmo, análise de complexidade e métricas de execução foram apresentadas com clareza.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 12.9,
+      "tokens": {
+        "agent": {
+          "input": 14428,
+          "output": 806,
+          "reasoning": 307
+        },
+        "judge": {
+          "input": 975,
+          "output": 95,
+          "reasoning": 394
+        }
+      },
+      "judged_at": "2026-10-23T23:40:23+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara calcular o n-ésimo número de Fibonacci, a abordagem recursiva simples resulta em uma complexidade de tempo exponencial `O(2ⁿ)`, o que seria ineficiente.\n\nA melhor estratégia para este caso é a **Programação Dinâmica Iterativa (Bottom-Up)** com otimização de espaço. Em vez de armazenar todos os números anteriores até `n` em um vetor (o que gastaria `O(n)` de memória), mantemos apenas os dois últimos valores calculados (`a` e `b`) e os atualizamos iterativamente até alcançar `n`.\n\nEssa abordagem garante tempo de execução linear e uso de memória constante.\n\n---\n\n### Código da Solução\n\n```python\ndef solve(n: int) -> int:\n    \"\"\"Compute the n-th Fibonacci number using an iterative bottom-up approach.\"\"\"\n    if n < 0:\n        raise ValueError(\"n must be a non-negative integer\")\n    if n == 0:\n        return 0\n    if n == 1:\n        return 1\n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b\n```\n\n---\n\n### Resultado da Execução\n\n- **Parâmetro de entrada:** `{\"n\": 100}`\n- **Resultado:** `354224848179261915075`\n- **Tempo de execução:** `0.008 ms`\n- **Pico de memória:** `8860 KB` (inclui a linha de base do interpretador Python de ~9 MB)\n\n---\n\n### Análise de Complexidade\n\n- **Complexidade de Tempo:** `O(n)` — O laço executa `n - 1` iterações simples de adição.\n- **Complexidade de Espaço:** `O(1)` — Utilizamos apenas duas variáveis inteiras (`a` e `b`) para manter o estado dos dois termos anteriores."
+    },
+    {
+      "id": "merge-intervals",
+      "difficulty": "média",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O sistema apresentou a solução correta e eficiente para o problema, com resultado de execução idêntico à saída esperada. A explicação da estratégia, o código e as análises de complexidade foram bem estruturados e claros.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 12.2,
+      "tokens": {
+        "agent": {
+          "input": 14259,
+          "output": 1044,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 1148,
+          "output": 72,
+          "reasoning": 336
+        }
+      },
+      "judged_at": "2026-10-23T23:40:35+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara unificar intervalos que se sobrepõem:\n1. **Ordenação Inicial**: Ordenamos os intervalos com base no seu ponto inicial (`start`). Isso garante que qualquer intervalo que possa se sobrepor a outro estará adjacente ou próximo na sequência.\n2. **Varredura Linear (Guloso)**: Iteramos pelos intervalos ordenados mantendo uma lista de intervalos mesclados. Para cada intervalo:\n   - Se o início do intervalo atual for menor ou igual ao fim do último intervalo adicionado à lista, há uma sobreposição. Então, atualizamos o fim do último intervalo para o valor máximo entre o fim atual e o fim do novo intervalo.\n   - Caso contrário, não há sobreposição, e o intervalo atual é adicionado diretamente à lista.\n\nEsta estratégia ordena em `O(n log n)` e mescla em `O(n)`, garantindo ótima eficiência.\n\n---\n\n### Código da Solução\n\n```python\ndef solve(intervals: list[list[int]]) -> list[list[int]]:\n    \"\"\"\n    Merge overlapping intervals and return the result sorted by the start of each interval.\n    \"\"\"\n    if not intervals:\n        return []\n\n    # Sort intervals by their start time\n    intervals.sort(key=lambda x: x[0])\n\n    merged = [intervals[0]]\n    for current in intervals[1:]:\n        prev = merged[-1]\n        # If current interval overlaps with previous, merge them\n        if current[0] <= prev[1]:\n            prev[1] = max(prev[1], current[1])\n        else:\n            merged.append(current)\n\n    return merged\n```\n\n---\n\n### Resultado da Execução\n\n- **Parâmetros de Entrada**: `{\"intervals\": [[1, 3], [2, 6], [8, 10], [15, 18]]}`\n- **Resultado**: `[[1, 6], [8, 10], [15, 18]]`\n- **Tempo de Execução (`duration_in_ms`)**: 0.009 ms\n- **Pico de Memória (`peak_memory_in_kb`)**: 9152 KB (inclui ~9 MB da linha de base do interpretador Python)\n\n---\n\n### Análise de Complexidade\n\n- **Complexidade de Tempo**: `O(n log n)`, onde `n` é o número de intervalos. O passo dominante é a ordenação dos intervalos. A iteração para mesclar leva tempo `O(n)`.\n- **Complexidade de Espaço**: `O(n)` no pior caso (ou `O(log n)` para o espaço auxiliar da ordenação), para armazenar a lista resultante de intervalos."
+    },
+    {
+      "id": "coin-change",
+      "difficulty": "média",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O código em programação dinâmica está correto, retornou o resultado esperado (3) e atinge as complexidades de tempo e espaço de referência. A resposta é muito clara, organizada e bem explicada em português do Brasil.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 11.5,
+      "tokens": {
+        "agent": {
+          "input": 14162,
+          "output": 999,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 1101,
+          "output": 81,
+          "reasoning": 259
+        }
+      },
+      "judged_at": "2026-10-23T23:40:46+00:00",
+      "answer": "### Estratégia e Justificativa\n\nO problema da troca de moedas (Coin Change) é um clássico problema de otimização que pode ser resolvido eficientemente usando **Programação Dinâmica *bottom-up***.\n\n- **Estratégia**: Criamos uma tabela/vetor `dp` de tamanho `amount + 1`, onde cada índice `i` armazena o menor número de moedas necessárias para formar o valor `i`.\n- **Caso base**: `dp[0] = 0` (0 moedas para valor 0) e `dp[i] = ∞` para `i > 0`.\n- **Transição**: Para cada moeda disponível, atualizamos a tabela para todos os valores de `i` de `coin` até `amount`:\n  `dp[i] = min(dp[i], dp[i - coin] + 1)`\n- **Justificativa**: Essa abordagem evita recalculamentos desnecessários (subproblemas sobrepostos) e garante a solução ótima global em tempo linear em relação ao valor total `amount` e ao número de tipos de moedas.\n\n---\n\n### Código\n\n```python\ndef solve(coins: list[int], amount: int) -> int:\n    \"\"\"Find the minimum number of coins needed to make up a given amount.\"\"\"\n    if amount == 0:\n        return 0\n    if amount < 0:\n        return -1\n        \n    dp = [float('inf')] * (amount + 1)\n    dp[0] = 0\n    \n    for coin in coins:\n        for i in range(coin, amount + 1):\n            dp[i] = min(dp[i], dp[i - coin] + 1)\n            \n    return dp[amount] if dp[amount] != float('inf') else -1\n```\n\n---\n\n### Resultado da Execução\n\n- **Entrada**: `{\"coins\": [1, 2, 5], \"amount\": 11}`\n- **Resultado**: `3` (por exemplo: 5 + 5 + 1)\n- **Tempo de Execução**: `0.012 ms`\n- **Pico de Memória**: `9100 kB` (inclui a linha de base do interpretador Python)\n\n---\n\n### Complexidade\n\n- **Complexidade de Tempo**: `O(n × amount)`, onde `n` é a quantidade de tipos de moedas e `amount` é o valor total.\n- **Complexidade de Espaço**: `O(amount)`, para armazenar a lista auxiliar `dp` de tamanho `amount + 1`."
+    },
+    {
+      "id": "longest-increasing-subsequence",
+      "difficulty": "média",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O sistema resolveu o problema corretamente utilizando busca binária, obtendo o resultado esperado 4. As complexidades de tempo e espaço coincidem com as de referência (O(n log n) e O(n)). A resposta é clara, bem explicada, inclui o código, os dados da execução e a análise de complexidade.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 13.6,
+      "tokens": {
+        "agent": {
+          "input": 15065,
+          "output": 1372,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 1116,
+          "output": 95,
+          "reasoning": 311
+        }
+      },
+      "judged_at": "2026-10-23T23:41:00+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara determinar o comprimento da maior subsequência estritamente crescente (LIS), utilizou-se a técnica de **Patience Sorting / Lista de Caudas (Tails)** combinada com **Busca Binária**:\n- Mantemos uma lista dinâmica `tails` onde cada índice `i` armazena o menor valor final dentre todas as subsequências crescentes de comprimento `i + 1` encontradas até então.\n- Para cada número da entrada, realizamos uma busca binária (`bisect_left`) para determinar sua posição na lista `tails`:\n  - Se o número for maior que todos os elementos presentes, ele expande a maior subsequência.\n  - Caso contrário, substitui o primeiro elemento que for maior ou igual a ele, garantindo valores limites menores e mais favoráveis para futuros elementos.\n- Ao final, o tamanho de `tails` corresponde exatamente ao comprimento da maior subsequência estritamente crescente.\n\nEsta abordagem é ideal pois reduz a complexidade de tempo do clássico `O(n²)` para `O(n log n)`.\n\n---\n\n### Código em Python\n\n```python\nimport bisect\n\ndef solve(numbers: list[int]) -> int:\n    \"\"\"\n    Finds the length of the longest strictly increasing subsequence (LIS)\n    using binary search (O(n log n) time complexity).\n    \"\"\"\n    if not numbers:\n        return 0\n    \n    tails = []\n    for x in numbers:\n        idx = bisect.bisect_left(tails, x)\n        if idx == len(tails):\n            tails.append(x)\n        else:\n            tails[idx] = x\n            \n    return len(tails)\n```\n\n---\n\n### Resultado da Execução\n\n- **Resultado:** `4` (por exemplo, a subsequência `[2, 3, 7, 101]` ou `[2, 5, 7, 101]`)\n- **Tempo de execução (`duration_in_ms`):** `0.005` ms\n- **Pico de memória (`peak_memory_in_kb`):** `9192` KB (~9.0 MB, incluindo a baseline do interpretador Python)\n\n---\n\n### Análise de Complexidade\n\n- **Complexidade de Tempo:** `O(n log n)`, onde `n` é o número de elementos da lista. Iteramos pelos `n` elementos e fazemos uma busca binária de custo `O(log n)` para cada um.\n- **Complexidade de Espaço:** `O(n)`, no pior caso em que todos os elementos estão em ordem estritamente crescente e a lista `tails` armazena todos os `n` números."
+    },
+    {
+      "id": "number-of-islands",
+      "difficulty": "média",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O código resolve o problema perfeitamente via DFS, retornando a saída esperada (3). A complexidade atinge a referência ideal de O(linhas × colunas) em tempo e espaço. A resposta é clara, organizada e inclui todos os detalhes e métricas de execução necessários.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 13.6,
+      "tokens": {
+        "agent": {
+          "input": 16507,
+          "output": 1224,
+          "reasoning": 539
+        },
+        "judge": {
+          "input": 1165,
+          "output": 85,
+          "reasoning": 312
+        }
+      },
+      "judged_at": "2026-10-23T23:41:14+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara resolver o problema de contagem de ilhas em uma grade bidimensional, a melhor abordagem é a **Busca em Profundidade (DFS - Depth-First Search)** ou **Busca em Largura (BFS)**.\n\n- **Estratégia**: Percorremos a matriz célula por célula. Sempre que encontramos uma célula com terra (`1`) que ainda não foi visitada, incrementamos o contador de ilhas e iniciamos uma busca DFS a partir dessa célula. A busca explora e marca todas as células de terra conectadas horizontalmente ou verticalmente como visitadas.\n- **Justificativa**: Essa abordagem garante que cada componente conectado (ilha) seja visitado exatamente uma vez de forma eficiente, evitando loops com uma matriz auxiliar de visitados.\n\n---\n\n### Código em Python\n\n```python\ndef solve(grid: list[list[int]]) -> int:\n    if not grid or not grid[0]:\n        return 0\n\n    rows, cols = len(grid), len(grid[0])\n    visited = [[False for _ in range(cols)] for _ in range(rows)]\n\n    def dfs(r: int, c: int) -> None:\n        if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] == 0 or visited[r][c]:\n            return\n        visited[r][c] = True\n        dfs(r + 1, c)\n        dfs(r - 1, c)\n        dfs(r, c + 1)\n        dfs(r, c - 1)\n\n    islands = 0\n    for r in range(rows):\n        for c in range(cols):\n            if grid[r][c] == 1 and not visited[r][c]:\n                islands += 1\n                dfs(r, c)\n\n    return islands\n```\n\n---\n\n### Resultado da Execução\n\n- **Status**: Concluído (`completed`)\n- **Resultado**: `3` ilhas\n- **Tempo de Execução**: `0.018 ms`\n- **Pico de Memória**: `9260 KB` (inclui a linha de base do interpretador Python)\n\n---\n\n### Complexidade\n\n- **Complexidade de Tempo**: `O(m * n)`, onde `m` é o número de linhas e `n` é o número de colunas. Cada célula da grade é visitada um número constante de vezes.\n- **Complexidade de Espaço**: `O(m * n)` para a matriz `visited` e para a pilha de chamadas recursivas no pior caso (quando a grade inteira é composta por terra)."
+    },
+    {
+      "id": "course-schedule",
+      "difficulty": "média",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O sistema resolveu o problema corretamente utilizando o Algoritmo de Kahn para detecção de ciclos em grafos direcionados. O código está correto, eficiente e atinge a complexidade ideal de O(V + E) tanto em tempo quanto em espaço. A explicação e a apresentação dos resultados da execução estão claras e muito bem estruturadas.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 13.9,
+      "tokens": {
+        "agent": {
+          "input": 14880,
+          "output": 1329,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 1317,
+          "output": 106,
+          "reasoning": 478
+        }
+      },
+      "judged_at": "2026-10-23T23:41:27+00:00",
+      "answer": "### 1. Estratégia e Justificativa\n\nO problema consiste em verificar se existe um ciclo em um grafo direcionado, onde cada vértice representa um curso e cada aresta direcionada `b -> a` indica que o curso `b` é pré-requisito do curso `a`. Se houver pelo menos um ciclo direcionado no grafo, será impossível concluir todos os cursos.\n\nPara resolver o problema, utilizamos o **Algoritmo de Kahn (Ordenação Topológica baseada em BFS / Grau de Entrada)**:\n- Calculamos o grau de entrada (*in-degree*) de cada curso (quantidade de pré-requisitos necessários ainda não concluídos).\n- Inicializamos uma fila com os cursos que possuem grau de entrada igual a 0 (cursos sem pré-requisitos pendentes).\n- Processamos a fila iterativamente, reduzindo o grau de entrada dos cursos dependentes à medida que os pré-requisitos são concluídos.\n- Se ao final o número de cursos processados for igual a `num_courses`, é possível concluir todos os cursos; caso contrário, existe um ciclo de pré-requisitos interdependentes.\n\n---\n\n### 2. Código Implementado\n\n```python\ndef solve(num_courses: int, prerequisites: list[list[int]]) -> bool:\n    \"\"\"\n    Determines if it is possible to finish all courses given the prerequisites.\n    Uses Kahn's algorithm (BFS-based topological sort / in-degree count).\n    \"\"\"\n    from collections import deque, defaultdict\n\n    adj = defaultdict(list)\n    in_degree = [0] * num_courses\n\n    for dest, src in prerequisites:\n        adj[src].append(dest)\n        in_degree[dest] += 1\n\n    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])\n    visited_count = 0\n\n    while queue:\n        u = queue.popleft()\n        visited_count += 1\n        for v in adj[u]:\n            in_degree[v] -= 1\n            if in_degree[v] == 0:\n                queue.append(v)\n\n    return visited_count == num_courses\n```\n\n---\n\n### 3. Resultado da Execução\n\n- **Parâmetros:** `{\"num_courses\": 4, \"prerequisites\": [[1, 0], [2, 1], [0, 2], [3, 0]]}`\n- **Resultado:** `false` (não é possível concluir todos os cursos, pois existe um ciclo entre os cursos 0, 1 e 2: `0 -> 1 -> 2 -> 0`)\n- **Tempo de execução:** `0.04 ms`\n- **Pico de memória:** `9336 KB` (~9.1 MB, incluindo a linha de base do interpretador Python)\n\n---\n\n### 4. Complexidade\n\n- **Complexidade de Tempo:** `O(V + E)`, onde `V` é o número de cursos (`num_courses`) e `E` é o número de pré-requisitos (`len(prerequisites)`). Cada vértice e aresta são visitados no máximo uma vez.\n- **Complexidade de Espaço:** `O(V + E)` para armazenar a lista de adjacência `adj`, a estrutura de graus de entrada `in_degree` e a fila de processamento BFS `queue`."
+    },
+    {
+      "id": "longest-common-subsequence",
+      "difficulty": "média",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "A solução utilizou a abordagem clássica de programação dinâmica para o problema do LCS, retornando o resultado correto (4). As complexidades de tempo e espaço correspondem exatamente à referência e a explicação é completa e bem estruturada.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 13.2,
+      "tokens": {
+        "agent": {
+          "input": 15597,
+          "output": 1201,
+          "reasoning": 511
+        },
+        "judge": {
+          "input": 1215,
+          "output": 73,
+          "reasoning": 122
+        }
+      },
+      "judged_at": "2026-10-23T23:41:41+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara determinar o comprimento da Maior Subsequência Comum (*Longest Common Subsequence* - LCS) entre duas sequências, a abordagem ideal é a **Programação Dinâmica**. \n\nA solução constrói uma matriz bidimensional `dp` de dimensão `(m + 1) x (n + 1)`, onde `m` e `n` são os tamanhos das duas strings. Cada célula `dp[i][j]` armazena o comprimento da LCS entre os prefixos `first[0..i-1]` e `second[0..j-1]`:\n- Se os caracteres atuais forem iguais (`first[i-1] == second[j-1]`), incrementamos o valor da diagonal anterior: `dp[i][j] = dp[i-1][j-1] + 1`.\n- Caso contrário, tomamos o máximo entre ignorar o caractere da primeira string ou o da segunda: `dp[i][j] = max(dp[i-1][j], dp[i][j-1])`.\n\nEssa abordagem evita o cálculo redundante de subproblemas e garante encontrar a solução ótima em tempo polinomial.\n\n---\n\n### Código do Algoritmo\n\n```python\ndef solve(first: str, second: str) -> int:\n    \"\"\"\n    Calculates the length of the longest common subsequence (LCS) between two strings.\n    \"\"\"\n    m, n = len(first), len(second)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    \n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if first[i - 1] == second[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n                \n    return dp[m][n]\n```\n\n---\n\n### Resultado da Execução\n\n- **Parâmetros de Entrada:** `{\"first\": \"ABCBDAB\", \"second\": \"BDCABA\"}`\n- **Resultado Retornado:** `4` (Subsequências comuns de comprimento 4 incluem, por exemplo, `\"BDAB\"`, `\"BCAB\"` ou `\"BCBA\"`).\n- **Tempo de Execução:** `0.029 ms`\n- **Pico de Memória:** `8952 KB` (~8.74 MB, incluindo o *baseline* do interpretador Python)\n\n---\n\n### Análise de Complexidade\n\n- **Complexidade de Tempo:** `O(m * n)`, em que `m` é o comprimento da string `first` e `n` é o comprimento de `second`. Preenchemos uma tabela de tamanho `(m + 1) x (n + 1)` com operações de tempo constante `O(1)` para cada célula.\n- **Complexidade de Espaço:** `O(m * n)` para armazenar a matriz da programação dinâmica."
+    },
+    {
+      "id": "edit-distance",
+      "difficulty": "difícil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O resultado obtido (3) está correto e coincide com a saída esperada. O algoritmo implementado otimiza a complexidade de espaço para O(min(m, n)), atendendo plenamente aos requisitos de eficiência. A explicação da estratégia, a análise de complexidade e o relato dos dados de execução estão extremamente claros e bem estruturados.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 13.9,
+      "tokens": {
+        "agent": {
+          "input": 15372,
+          "output": 1573,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 1344,
+          "output": 98,
+          "reasoning": 368
+        }
+      },
+      "judged_at": "2026-10-23T23:41:55+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara calcular a distância de edição (Levenshtein) entre duas strings, a abordagem ideal é a **Programação Dinâmica**. \n\nSejam `m` e `n` os tamanhos das duas palavras. Definimos uma subestrutura ótima onde o custo para transformar o prefixo de tamanho `i` da primeira palavra no prefixo de tamanho `j` da segunda palavra depende das decisões tomadas para subproblemas menores:\n1. **Inserção**: custo da célula `(i, j - 1) + 1`.\n2. **Remoção**: custo da célula `(i - 1, j) + 1`.\n3. **Substituição**: custo da célula `(i - 1, j - 1)` acrescido de `0` se os caracteres forem iguais ou `1` se forem diferentes.\n\nPara otimizar o uso de memória de `O(m × n)` para `O(min(m, n))`, mantemos apenas a linha anterior e a linha atual da tabela de programação dinâmica, garantindo extrema eficiência de espaço e tempo.\n\n---\n\n### Código em Python\n\n```python\ndef solve(source: str, target: str) -> int:\n    \"\"\"\n    Calculate the Levenshtein edit distance between source and target strings\n    using dynamic programming with space optimization.\n    \n    Parameters:\n    source (str): The starting string.\n    target (str): The target string.\n    \n    Returns:\n    int: The minimum number of edit operations (insertions, deletions, substitutions)\n         required to transform source into target.\n    \"\"\"\n    m, n = len(source), len(target)\n    \n    # Ensure source is the shorter string to optimize space usage\n    if m > n:\n        source, target = target, source\n        m, n = n, m\n        \n    # previous row of distances\n    dp = list(range(m + 1))\n    \n    for j in range(1, n + 1):\n        current = [j] + [0] * m\n        for i in range(1, m + 1):\n            if source[i - 1] == target[j - 1]:\n                cost = 0\n            else:\n                cost = 1\n            current[i] = min(\n                dp[i] + 1,          # insertion\n                current[i - 1] + 1, # deletion\n                dp[i - 1] + cost    # substitution\n            )\n        dp = current\n        \n    return dp[m]\n```\n\n---\n\n### Resultado da Execução\n\n- **Parâmetros de Entrada:** `{\"source\": \"kitten\", \"target\": \"sitting\"}`\n- **Resultado:** `3`\n- **Tempo de Execução:** `0.017 ms`\n- **Pico de Memória:** `8864 KB` (inclui o baseline do interpretador Python)\n\n*(As 3 operações para transformar \"kitten\" em \"sitting\" são: **k**itten → **s**itten [substituição], sitt**e**n → sitt**i**n [substituição], sittin → sittin**g** [inserção]).*\n\n---\n\n### Complexidade\n\n- **Complexidade de Tempo:** `O(m × n)`, onde `m` e `n` são os tamanhos das duas palavras, já que cada par de prefixos é processado exatamente uma vez em um loop aninhado simples.\n- **Complexidade de Espaço:** `O(min(m, n))`, pois mantemos apenas duas linhas da matriz de programação dinâmica alocadas na memória a qualquer momento."
+    },
+    {
+      "id": "knapsack",
+      "difficulty": "difícil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O código está correto e implementa a solução de programação dinâmica com otimização de espaço para a mochila 0/1. O resultado retornado (9) é idêntico ao esperado e as complexidades de tempo O(n * capacity) e espaço O(capacity) correspondem à referência. A explicação é clara, detalhada e inclui métricas de execução em português.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 11.5,
+      "tokens": {
+        "agent": {
+          "input": 14545,
+          "output": 1089,
+          "reasoning": 0
+        },
+        "judge": {
+          "input": 1130,
+          "output": 104,
+          "reasoning": 296
+        }
+      },
+      "judged_at": "2026-10-23T23:42:06+00:00",
+      "answer": "### Estratégia e Justificativa\n\nO problema da mochila 0/1 (0/1 Knapsack Problem) consiste em escolher um subconjunto de itens tal que a soma dos pesos não ultrapasse a capacidade `capacity` e a soma dos valores seja a maior possível. Como cada item só pode ser escolhido 0 ou 1 vez, a abordagem ideal é a **Programação Dinâmica (Bottom-Up)**.\n\nEm vez de usar uma matriz 2D de tamanho `n x (capacity + 1)`, otimizamos o espaço para um vetor 1D `dp` de tamanho `capacity + 1`. Iterando sobre cada item e atualizando a tabela de capacidade de forma regressiva (da capacidade máxima até o peso do item atual), garantimos que cada item seja considerado no máximo uma única vez, reduzindo o consumo de memória de `O(n * capacity)` para `O(capacity)`.\n\n---\n\n### Código em Python\n\n```python\ndef solve(weights: list[int], values: list[int], capacity: int) -> int:\n    \"\"\"\n    Solves the 0/1 Knapsack Problem using Dynamic Programming (Bottom-Up).\n    \n    :param weights: List of item weights\n    :param values: List of item values\n    :param capacity: Maximum capacity of the knapsack\n    :return: Maximum value attainable\n    \"\"\"\n    n = len(weights)\n    dp = [0] * (capacity + 1)\n    \n    for i in range(n):\n        w, v = weights[i], values[i]\n        for c in range(capacity, w - 1, -1):\n            dp[c] = max(dp[c], dp[c - w] + v)\n            \n    return dp[capacity]\n```\n\n---\n\n### Resultado da Execução\n\n- **Resultado retornado**: `9` (selecionando o item de peso 3 e valor 4 + o item de peso 4 e valor 5, totalizando peso 7 e valor 9)\n- **Tempo de execução (`duration_in_ms`)**: `0.016 ms`\n- **Memória de pico (`peak_memory_in_kb`)**: `9356 KB` (~9.1 MB, incluindo a base do interpretador Python)\n\n---\n\n### Complexidade\n\n- **Complexidade de Tempo**: `O(n * W)`, onde `n` é o número de itens e `W` é a capacidade da mochila (`capacity`). É um algoritmo pseudo-polinomial.\n- **Complexidade de Espaço**: `O(W)`, pois é utilizado um vetor unidimensional de tamanho `W + 1`."
+    },
+    {
+      "id": "shortest-path",
+      "difficulty": "difícil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O algoritmo de Dijkstra foi implementado corretamente e retornou a menor distância esperada (20). A complexidade temporal e espacial coincide perfeitamente com a de referência. A explicação do código, resultados de execução e complexidade estão claros e bem detalhados.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 13.9,
+      "tokens": {
+        "agent": {
+          "input": 16021,
+          "output": 1306,
+          "reasoning": 243
+        },
+        "judge": {
+          "input": 1275,
+          "output": 80,
+          "reasoning": 391
+        }
+      },
+      "judged_at": "2026-10-23T23:42:20+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara encontrar a menor distância entre dois vértices em um grafo não direcionado com pesos positivos, a escolha ideal é o **Algoritmo de Dijkstra**. \n\nA estratégia utiliza uma fila de prioridade (min-heap via módulo `heapq`) para processar sempre o vértice de menor distância acumulada até o momento. Essa abordagem é otimizada para grafos com pesos não negativos, garantindo complexidade eficiente de tempo e espaço em comparação com buscas exaustivas.\n\n---\n\n### Código em Python\n\n```python\nimport heapq\n\ndef solve(num_vertices: int, edges: list[list[int]], source: int, target: int) -> int:\n    # Construção da lista de adjacência\n    adj = [[] for _ in range(num_vertices)]\n    for u, v, w in edges:\n        adj[u].append((v, w))\n        adj[v].append((u, w))\n    \n    distances = [float('inf')] * num_vertices\n    distances[source] = 0\n    pq = [(0, source)]\n    \n    while pq:\n        d, u = heapq.heappop(pq)\n        \n        if u == target:\n            return d\n        \n        if d > distances[u]:\n            continue\n            \n        for v, weight in adj[u]:\n            if distances[u] + weight < distances[v]:\n                distances[v] = distances[u] + weight\n                heapq.heappush(pq, (distances[v], v))\n                \n    return -1 if distances[target] == float('inf') else distances[target]\n```\n\n---\n\n### Resultado da Execução\n\n- **Status**: Concluído (`completed`)\n- **Resultado (distância mínima de 0 a 4)**: `20`\n- **Tempo de execução**: `0.018 ms`\n- **Pico de memória**: `8956 KB` (aprox. 8.7 MB, incluindo a linha de base do interpretador Python)\n\n*Nota do caminho percorrido:* `0 -> 2` (peso 9) + `2 -> 3` (peso 11) não, mas `0 -> 2` (peso 9) + `2 -> 5` (peso 2) + `5 -> 4` (peso 9) = 20.\n\n---\n\n### Complexidade\n\n- **Tempo**: `O((V + E) log V)`, onde `V` é o número de vértices (`num_vertices`) e `E` é o número de arestas (`edges`). As inserções e remoções da fila de prioridade custam `O(log V)`.\n- **Espaço**: `O(V + E)` para armazenar a lista de adjacência, a lista de distâncias e os elementos na min-heap."
+    },
+    {
+      "id": "n-queens",
+      "difficulty": "difícil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O resultado final está correto (92) e o algoritmo implementado com bitmasking é extremamente eficiente. As complexidades de tempo e espaço são equivalentes à referência de tempo O(N!) e espaço O(N). A explicação da estratégia, código, métricas de execução e complexidade estão perfeitamente apresentadas em português.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 14.6,
+      "tokens": {
+        "agent": {
+          "input": 15193,
+          "output": 1233,
+          "reasoning": 295
+        },
+        "judge": {
+          "input": 1185,
+          "output": 106,
+          "reasoning": 351
+        }
+      },
+      "judged_at": "2026-10-23T23:42:35+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara resolver o problema das $N$-Rainhas (contar de quantas maneiras é possível posicionar $n$ rainhas em um tabuleiro $n \\times n$ sem que nenhuma se ataque), utilizamos a estratégia de **backtracking** combinada com **máscaras de bits (bitmasking)**.\n\n**Justificativa:**\n- Cada rainha deve ser colocada em uma linha distinta. Por isso, avançamos linha a linha (de $0$ a $n - 1$).\n- Para saber se uma posição é válida em tempo constante $O(1)$, mantemos três inteiros representando o estado ocupado:\n  1. `cols`: colunas ocupadas.\n  2. `diag1`: diagonais principais ocupadas (deslocadas a cada linha).\n  3. `diag2`: diagonais secundárias ocupadas (deslocadas a cada linha).\n- Operações bit a bit (`&`, `|`, `~`, `<<`, `>>`) permitem encontrar e testar todas as posições válidas de uma linha de forma extremamente rápida, reduzindo o tempo de execução e o consumo de memória em comparação com estruturas baseadas em listas ou conjuntos.\n\n---\n\n### Código da Solução\n\n```python\ndef solve(n: int) -> int:\n    \"\"\"\n    Counts the number of valid placements of n non-attacking queens on an n x n chessboard.\n    Uses backtracking with bitwise operations for maximum efficiency.\n    \"\"\"\n    if n <= 0:\n        return 0\n\n    count = 0\n    full_mask = (1 << n) - 1\n\n    def backtrack(cols: int, diag1: int, diag2: int) -> None:\n        nonlocal count\n        if cols == full_mask:\n            count += 1\n            return\n\n        available = full_mask & ~(cols | diag1 | diag2)\n        while available:\n            bit = available & -available\n            available ^= bit\n            backtrack(\n                cols | bit,\n                (diag1 | bit) << 1,\n                (diag2 | bit) >> 1\n            )\n\n    backtrack(0, 0, 0)\n    return count\n```\n\n---\n\n### Resultado da Execução\n\n- **Entrada:** `{\"n\": 8}`\n- **Resultado:** `92` maneiras distintas\n- **Tempo de Execução (`duration_in_ms`):** ~0,34 ms\n- **Pico de Memória (`peak_memory_in_kb`):** 8972 KB (inclui ~9 MB do runtime do interpretador Python)\n\n---\n\n### Complexidade\n\n- **Complexidade de Tempo:** `O(N!)` no pior caso, pois o algoritmo explora as combinações válidas reduzindo o espaço de busca a cada linha alocada. Na prática, poda-se grande parte do espaço de estados.\n- **Complexidade de Espaço:** `O(N)` devido à profundidade da pilha de recursão (máximo de $N$ chamadas empilhadas para uma grade de tamanho $N$)."
+    },
+    {
+      "id": "count-primes",
+      "difficulty": "difícil",
+      "scores": {
+        "correctness": 5,
+        "efficiency": 5,
+        "clarity": 5
+      },
+      "justification": "O código implementa o Crivo de Eratóstenes de maneira extremamente eficiente com slicing de bytearray e atinge o resultado correto. A explicação é completa, cobrindo estratégia, complexidade e métricas de execução com clareza.",
+      "tool_calls": [
+        "validate_algorithm",
+        "create_algorithm",
+        "execute_algorithm"
+      ],
+      "duration_in_seconds": 15.3,
+      "tokens": {
+        "agent": {
+          "input": 15146,
+          "output": 1057,
+          "reasoning": 462
+        },
+        "judge": {
+          "input": 1121,
+          "output": 88,
+          "reasoning": 666
+        }
+      },
+      "judged_at": "2026-10-23T23:42:50+00:00",
+      "answer": "### Estratégia e Justificativa\n\nPara contar os números primos menores ou iguais a `n` (neste caso, `n = 2.000.000`), a estratégia ideal é o **Crivo de Eratóstenes**. \n\nEm vez de testar a primalidade número por número (o que seria ineficiente), o Crivo de Eratóstenes marca progressivamente os múltiplos de cada primo encontrado como não primos. Para otimizar a execução em Python:\n- Utiliza-se um `bytearray` para armazenar o estado de cada número (ocupando apenas 1 byte por elemento e permitindo atribuições por fatia/*slicing* rápidas em C interno).\n- O laço externo percorre até `√n`, pois qualquer número composto menor ou igual a `n` possui um fator primo menor ou igual a `√n`.\n- Os múltiplos são desmarcados a partir de `p²`, já que múltiplos menores (`2p`, `3p`, etc.) já foram desmarcados por primos anteriores.\n\n---\n\n### Código\n\n```python\ndef solve(n: int) -> int:\n    \"\"\"Count the number of prime numbers less than or equal to n using the Sieve of Eratosthenes.\"\"\"\n    if n < 2:\n        return 0\n    \n    is_prime = bytearray([1]) * (n + 1)\n    is_prime[0] = is_prime[1] = 0\n    \n    p = 2\n    while p * p <= n:\n        if is_prime[p]:\n            is_prime[p * p : n + 1 : p] = bytearray((n - p * p) // p + 1)\n        p += 1\n        \n    return sum(is_prime)\n```\n\n---\n\n### Resultado da Execução\n\n- **Resultado:** `148933` (existem 148.933 números primos menores ou iguais a 2.000.000)\n- **Tempo de execução:** `11.641 ms`\n- **Pico de memória:** `11800 KB` (aprox. 11,5 MB, incluindo a sobretaxa base do interpretador Python)\n\n---\n\n### Complexidade\n\n- **Complexidade de Tempo:** `O(n log log n)`. Para `n = 2.000.000`, isso requer pouquíssimas operações, executando em cerca de 11 milissegundos.\n- **Complexidade de Espaço:** `O(n)`. O `bytearray` de tamanho `n + 1` consome aproximadamente 2 MB de memória contígua para armazenar os marcadores."
+    }
+  ]
+}
