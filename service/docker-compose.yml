@@ -1,0 +1,27 @@
+name: lambda-lab-service
+
+services:
+  service:
+    build: .
+    container_name: lambda-lab-service
+    hostname: lambda-lab-service
+    command: python /app/__main__.py
+    restart: always
+    environment:
+      DATABASE_URL: sqlite:////data/service.db
+      PYTHONDONTWRITEBYTECODE: "1"
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./app:/app
+      - sqlitedata:/data
+    networks:
+      - lambda-lab-network
+
+networks:
+  lambda-lab-network:
+    name: lambda-lab-network
+    driver: bridge
+
+volumes:
+  sqlitedata:
