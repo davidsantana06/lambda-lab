@@ -154,6 +154,8 @@ Cada caso é gravado em `client/app/judge_report.json` assim que termina, com no
 
 O relatório registra os modelos usados. Se `LLM_MODEL`, `LLM_REASONING_EFFORT` ou `JUDGE_MODEL` mudarem, o script pede `--restart` para não misturar notas. Como referência, um caso fácil gastou cerca de 15 mil tokens no agente e 1,5 mil no juiz.
 
+O `.env.example` usa como juiz o `gemini-3.6-flash`, disponível no plano gratuito, e o `judge_report.json` versionado foi gerado com esse mesmo modelo, como registra o campo `configuration`. Um juiz Pro exige faturamento ativo.
+
 ## ⚠️ Limitações
 
 - O sandbox não impede o código de ler arquivos do contêiner nem de acessar a rede, então não é adequado para código não confiável.
