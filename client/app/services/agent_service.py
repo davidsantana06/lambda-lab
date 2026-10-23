@@ -146,7 +146,7 @@ async def answer_question(
 
     history.extend(messages[turn_start:])
 
-    if use_cache and tool_call_count == 0:
+    if use_cache and tool_call_count == 0 and answer != _EMPTY_ANSWER:
         save_cached_answer(question, embedding, answer)
 
     return answer, None
