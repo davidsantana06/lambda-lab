@@ -98,7 +98,7 @@ O comando cria a rede `lambda-lab-network` e o volume `sqlitedata`. Antes de seg
 curl http://localhost:9000/health
 ```
 
-Ele deve responder `{"status":"ok","service":"algorithm"}`.
+Ele deve responder `{"status":"ok","service":"algorithm"}`. O serviço leva alguns segundos para subir, então, se o `curl` falhar logo após o `up`, espere um pouco e repita.
 
 ### 3️⃣ Subir servidor MCP
 
