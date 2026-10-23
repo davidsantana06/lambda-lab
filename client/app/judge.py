@@ -24,6 +24,7 @@ _REPORT_PATH = "/app/judge_report.json"
 _MAX_CASE_ATTEMPTS = 3
 _RATE_LIMIT_WAIT_IN_SECONDS = 60
 _TOKEN_KINDS = ("input", "output", "reasoning")
+_PAYMENT_REQUIRED_STATUS_CODE = 402
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -228,7 +229,15 @@ async def main() -> None:
         try:
             result = await score_case_with_retries(case)
         except Exception as error:
-            print(f"  stopped: {error}")
+            is_balance_exhausted = (
+                isinstance(error, APIStatusError)
+                and error.status_code == _PAYMENT_REQUIRED_STATUS_CODE
+            )
+            print(
+                "  stopped: the prepaid Gemini balance is exhausted (402)"
+                if is_balance_exhausted
+                else f"  stopped: {error}"
+            )
             print("  scored cases are saved; run again later to resume")
             stopped = True
             break

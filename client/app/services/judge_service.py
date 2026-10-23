@@ -58,7 +58,6 @@ async def judge_answer(case: dict[str, Any], answer: str) -> dict[str, Any]:
             {"role": "user", "content": _compose_evaluation(case, answer)},
         ],
         model=JUDGE_MODEL,
-        temperature=0,
         response_format={"type": "json_object"},
     )
     return _parse_verdict(message.content or "")
