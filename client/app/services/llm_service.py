@@ -7,6 +7,7 @@ import os
 import re
 
 LLM_MODEL = os.environ["LLM_MODEL"]
+LLM_REASONING_EFFORT = os.environ.get("LLM_REASONING_EFFORT", "low")
 EMBEDDING_MODEL = os.environ["EMBEDDING_MODEL"]
 # Rate limited (429) or overloaded (503): both usually pass after a short wait.
 TRANSIENT_STATUS_CODES = (429, 503)

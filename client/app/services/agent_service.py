@@ -4,7 +4,11 @@ from typing import Any, Optional
 import json
 
 from services.cache_service import find_cached_answer, save_cached_answer
-from services.llm_service import create_chat_completion, create_embedding
+from services.llm_service import (
+    LLM_REASONING_EFFORT,
+    create_chat_completion,
+    create_embedding,
+)
 from services.tools_service import call_tool, list_tools
 
 ToolCaller = Callable[[str, dict[str, Any]], Awaitable[dict[str, Any]]]
@@ -109,7 +113,11 @@ async def answer_question(
     turn_start = len(messages) - 1
     tool_call_count = 0
     for _ in range(_MAX_AGENT_STEPS):
-        message = await create_chat_completion(messages, tools)
+        message = await create_chat_completion(
+            messages,
+            tools,
+            reasoning_effort=LLM_REASONING_EFFORT,
+        )
         messages.append(message.model_dump(exclude_none=True))
         if not message.tool_calls:
             answer = message.content or _EMPTY_ANSWER
