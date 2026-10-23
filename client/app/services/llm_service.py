@@ -1,5 +1,7 @@
+from collections import Counter
 from collections.abc import Awaitable, Callable
 from openai import APIStatusError, AsyncOpenAI
+from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletionMessage
 from typing import Any, Optional, TypeVar
 import asyncio
@@ -19,6 +21,10 @@ _MAX_RETRY_WAIT_IN_SECONDS = 60
 
 _client = AsyncOpenAI(api_key=os.environ["GEMINI_API_KEY"], base_url=_GEMINI_BASE_URL)
 
+# Input, output and reasoning tokens of every chat completion in this process,
+# so the judge can tell what each case cost.
+token_usage: Counter[str] = Counter()
+
 Response = TypeVar("Response")
 
 
@@ -37,6 +43,7 @@ async def create_chat_completion(
             **options,
         )
     )
+    _record_token_usage(completion.usage)
     return completion.choices[0].message
 
 
@@ -77,3 +84,13 @@ def _compose_retry_wait(error: APIStatusError) -> float:
         return _DEFAULT_RETRY_WAIT_IN_SECONDS
     return float(match.group(1)) + 1
 
+
+def _record_token_usage(usage: Optional[CompletionUsage]) -> None:
+    if usage is None:
+        return
+    token_usage["input"] += usage.prompt_tokens
+    token_usage["output"] += usage.completion_tokens
+    # Gemini counts thinking tokens only in the total.
+    token_usage["reasoning"] += (
+        usage.total_tokens - usage.prompt_tokens - usage.completion_tokens
+    )
