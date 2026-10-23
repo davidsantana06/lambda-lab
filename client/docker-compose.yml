@@ -10,13 +10,12 @@ services:
     env_file:
       - .env
     environment:
-      CACHE_DATABASE_URL: sqlite:////data/client.db
       PYTHONDONTWRITEBYTECODE: "1"
     ports:
       - "9002:9002"
     volumes:
       - ./app:/app
-      - sqlitedata:/data
+      - chromadata:/data
     networks:
       - lambda-lab-network
 
@@ -26,4 +25,4 @@ networks:
     external: true
 
 volumes:
-  sqlitedata:
+  chromadata:
