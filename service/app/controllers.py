@@ -14,6 +14,7 @@ from schemas import (
 )
 from services import monitor_execution, run_execution, validate_source_code
 
+
 router = APIRouter()
 
 
@@ -32,6 +33,7 @@ def create_algorithm(payload: AlgorithmCreate, session: Session = Depends(get_se
     validation = validate_source_code(payload.source_code, payload.entry_point)
     if not validation.valid:
         raise HTTPException(status_code=400, detail=validation.model_dump())
+
     algorithm = Algorithm.model_validate(payload)
     session.add(algorithm)
     session.commit()
@@ -62,6 +64,7 @@ def search_algorithms(
         statement = statement.where(
             col(Algorithm.description).ilike(f"%{filters.description}%")
         )
+
     return session.exec(statement.offset(offset).limit(limit)).all()
 
 
@@ -70,6 +73,7 @@ def get_algorithm(algorithm_id: int, session: Session = Depends(get_session)):
     algorithm = session.get(Algorithm, algorithm_id)
     if not algorithm:
         raise HTTPException(status_code=404, detail="algorithm not found")
+
     return algorithm
 
 
@@ -87,10 +91,12 @@ def create_execution(
     algorithm = session.get(Algorithm, algorithm_id)
     if not algorithm:
         raise HTTPException(status_code=404, detail="algorithm not found")
+
     execution = Execution(algorithm_id=algorithm_id, arguments=payload.arguments)
     session.add(execution)
     session.commit()
     session.refresh(execution)
+
     background_tasks.add_task(run_execution, execution.id)
     return execution
 
@@ -116,6 +122,7 @@ def search_executions(
         statement = statement.where(Execution.status == filters.status)
     if filters.algorithm_id is not None:
         statement = statement.where(Execution.algorithm_id == filters.algorithm_id)
+
     return session.exec(statement.offset(offset).limit(limit)).all()
 
 
@@ -124,4 +131,5 @@ def get_execution(execution_id: int, session: Session = Depends(get_session)):
     execution = session.get(Execution, execution_id)
     if not execution:
         raise HTTPException(status_code=404, detail="execution not found")
+
     return monitor_execution(execution)

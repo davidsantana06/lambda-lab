@@ -6,6 +6,7 @@ from sqlmodel import SQLModel, Session, create_engine
 from typing import Any
 import os
 
+
 engine = create_engine(
     os.environ["DATABASE_URL"],
     connect_args={"check_same_thread": False},

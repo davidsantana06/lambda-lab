@@ -15,6 +15,7 @@ from database import engine
 from models import Algorithm, Execution
 from schemas import AlgorithmValidation, ExecutionRead
 
+
 _EXECUTION_TIMEOUT_IN_SECONDS = 10
 _EXECUTION_MEMORY_LIMIT_IN_MB = 256
 _EXECUTION_OUTPUT_LIMIT_IN_CHARS = 10_000
@@ -42,6 +43,7 @@ import resource
 import sys
 import time
 import traceback
+
 
 # A process started by the service inherits its memory high-water mark, so
 # getrusage would never report less than the service's own peak. Forking once
@@ -75,28 +77,34 @@ try:
     with contextlib.redirect_stdout(captured_stdout):
         exec(compile(source_code, "algorithm.py", "exec"), namespace)
         entry_point = namespace[payload["entry_point"]]
+
         started_at = time.perf_counter_ns()
         try:
             report["result"] = entry_point(**payload["arguments"])
         finally:
             elapsed_in_ns = time.perf_counter_ns() - started_at
             report["duration_in_ms"] = round(elapsed_in_ns / 1_000_000, 3)
+
     report["status"] = "completed"
 except BaseException as error:
     frames = traceback.extract_tb(error.__traceback__)
     while frames and frames[0].filename != "algorithm.py":
         frames.pop(0)
+
     lines = traceback.format_list(frames)
     if lines:
         lines.insert(0, "Traceback (most recent call last):\n")
+
     lines.extend(traceback.format_exception_only(error))
     report["error"] = "".join(lines)
 
 report["peak_memory_in_kb"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+
 stdout = captured_stdout.getvalue()
 stdout_limit_in_chars = payload["stdout_limit_in_chars"]
 if len(stdout) > stdout_limit_in_chars:
     stdout = stdout[:stdout_limit_in_chars] + "\n[stdout truncated]"
+
 report["stdout"] = stdout
 
 # With the default digit limit back, integers too long for other JSON parsers
@@ -108,6 +116,7 @@ except (TypeError, ValueError, RecursionError):
     sys.set_int_max_str_digits(0)
     report["result"] = repr(report["result"])
     report_text = json.dumps(report)
+
 report_stream.write(report_text)
 report_stream.flush()
 os._exit(0)
@@ -127,6 +136,7 @@ def validate_source_code(source_code: str, entry_point: str) -> AlgorithmValidat
         )
     except ValueError as error:
         return AlgorithmValidation(valid=False, message=str(error))
+
     is_defined = any(
         isinstance(node, ast.FunctionDef) and node.name == entry_point
         for node in tree.body
@@ -136,6 +146,7 @@ def validate_source_code(source_code: str, entry_point: str) -> AlgorithmValidat
             valid=False,
             message=f"entry point {entry_point!r} is not a module-level function",
         )
+
     return AlgorithmValidation(valid=True)
 
 
@@ -143,10 +154,12 @@ def run_execution(execution_id: int) -> None:
     with Session(engine) as session:
         execution = session.get(Execution, execution_id)
         algorithm = session.get(Algorithm, execution.algorithm_id)
+
         execution.status = "running"
         execution.started_at = datetime.now(timezone.utc)
         session.add(execution)
         session.commit()
+
         try:
             report = _run_algorithm(algorithm, execution.arguments)
         except Exception as error:
@@ -154,8 +167,10 @@ def run_execution(execution_id: int) -> None:
                 "status": "failed",
                 "error": f"could not start the execution: {error}",
             }
+
         for field in _REPORT_FIELDS:
             setattr(execution, field, report.get(field))
+
         execution.finished_at = datetime.now(timezone.utc)
         session.add(execution)
         session.commit()
@@ -167,6 +182,7 @@ def monitor_execution(execution: Execution) -> ExecutionRead:
         started_at = execution.started_at.replace(tzinfo=timezone.utc)
         elapsed = datetime.now(timezone.utc) - started_at
         monitoring.elapsed_in_ms = round(elapsed.total_seconds() * 1000, 3)
+
     return monitoring
 
 
@@ -180,9 +196,11 @@ def _run_algorithm(algorithm: Algorithm, arguments: dict[str, Any]) -> dict[str,
             "stdout_limit_in_chars": _EXECUTION_OUTPUT_LIMIT_IN_CHARS,
         }
     )
+
     user = pwd.getpwnam(_EXECUTION_USER)
     with tempfile.TemporaryDirectory(prefix="execution-") as directory:
         os.chown(directory, user.pw_uid, user.pw_gid)
+
         started_at = time.perf_counter()
         with subprocess.Popen(
             [sys.executable, "-I", "-X", "utf8", "-c", _RUNNER_SOURCE_CODE],
@@ -204,12 +222,14 @@ def _run_algorithm(algorithm: Algorithm, arguments: dict[str, Any]) -> dict[str,
             except subprocess.TimeoutExpired:
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait()
+
                 wall_clock_in_ms = (time.perf_counter() - started_at) * 1000
                 return {
                     "status": "timed_out",
                     "duration_in_ms": round(wall_clock_in_ms, 3),
                     "error": f"execution timed out after {_EXECUTION_TIMEOUT_IN_SECONDS} seconds",
                 }
+
     return _compose_report(process.returncode, stdout, stderr)
 
 

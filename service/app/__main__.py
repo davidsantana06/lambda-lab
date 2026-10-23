@@ -4,6 +4,7 @@ import uvicorn
 from controllers import router
 from database import create_tables
 
+
 app = FastAPI()
 app.include_router(router)
 
