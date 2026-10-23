@@ -47,6 +47,15 @@ async def create_embedding(text: str) -> list[float]:
     return response.data[0].embedding
 
 
+# A wait longer than the cap means the daily quota or the balance is gone, so
+# waiting will not help.
+def can_retry_request(error: APIStatusError) -> bool:
+    return (
+        error.status_code in TRANSIENT_STATUS_CODES
+        and _compose_retry_wait(error) <= _MAX_RETRY_WAIT_IN_SECONDS
+    )
+
+
 # The free tier limits requests per minute, which a single answer with several
 # tool calls can exceed, and busy models answer 503. The SDK's own retries give
 # up within seconds, so this waits for the window Gemini reports instead.
@@ -57,15 +66,9 @@ async def _request_with_retries(
         try:
             return await send_request()
         except APIStatusError as error:
-            wait_in_seconds = _compose_retry_wait(error)
-            # A longer wait means the daily quota is gone, so waiting will not help.
-            is_transient = (
-                error.status_code in TRANSIENT_STATUS_CODES
-                and wait_in_seconds <= _MAX_RETRY_WAIT_IN_SECONDS
-            )
-            if not is_transient or attempt == _TRANSIENT_ERROR_RETRIES:
+            if not can_retry_request(error) or attempt == _TRANSIENT_ERROR_RETRIES:
                 raise
-            await asyncio.sleep(wait_in_seconds)
+            await asyncio.sleep(_compose_retry_wait(error))
 
 
 def _compose_retry_wait(error: APIStatusError) -> float:
@@ -73,3 +76,4 @@ def _compose_retry_wait(error: APIStatusError) -> float:
     if match is None:
         return _DEFAULT_RETRY_WAIT_IN_SECONDS
     return float(match.group(1)) + 1
+
