@@ -80,6 +80,8 @@ O cache semântico gera o embedding da pergunta localmente, com o modelo multil�
 
 Sistema operacional Linux, macOS ou Windows com WSL, além de Docker com o plugin Compose e uma chave da API do Gemini. Os três módulos constroem a própria imagem a partir de `python:3.12-slim` e instalam o `requirements.txt` no build, então não é preciso ter Python no host.
 
+A imagem do cliente ocupa cerca de 3,5 GB, por causa do PyTorch para CPU e do modelo de embeddings, e o primeiro build dela levou cerca de 11 minutos nos testes, conforme a conexão. Reserve pelo menos 5 GB livres em disco para as três imagens.
+
 As portas 9000, 9001 e 9002 precisam estar livres. Se alguma estiver ocupada, o compose falha na subida.
 
 ### 2️⃣ Subir serviço
