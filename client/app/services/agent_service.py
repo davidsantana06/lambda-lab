@@ -10,7 +10,8 @@ from services.tools_service import call_tool, list_tools
 ToolCaller = Callable[[str, dict[str, Any]], Awaitable[dict[str, Any]]]
 
 _MAX_FIX_ATTEMPTS = 3
-# One attempt takes validate, create, execute and up to five get_execution polls.
+# One attempt takes validate, create and execute, plus up to five get_execution
+# polls when a run outlasts the wait inside execute_algorithm.
 _MAX_STEPS_PER_ATTEMPT = 8
 # Two extra steps leave room for looking around first and for the final answer.
 _MAX_AGENT_STEPS = _MAX_FIX_ATTEMPTS * _MAX_STEPS_PER_ATTEMPT + 2
@@ -42,10 +43,10 @@ tamanho da entrada.
 4. Salve o código com `create_algorithm` e execute com `execute_algorithm`, usando \
 os parâmetros dados pelo usuário. Se o usuário não deu parâmetros, proponha um \
 exemplo pequeno e diga que é um exemplo.
-5. Acompanhe a execução com `get_execution` até o status ser `completed`, `failed` \
-ou `timed_out`. Enquanto for `pending` ou `running`, chame `get_execution` de novo. \
-Depois, relate o resultado, o tempo (`duration_in_ms`) e a memória \
-(`peak_memory_in_kb`).
+5. `execute_algorithm` espera até 5 segundos pela execução e normalmente já \
+devolve o status final (`completed`, `failed` ou `timed_out`). Só se ela voltar \
+`pending` ou `running`, acompanhe com `get_execution` até terminar. Depois, relate o \
+resultado, o tempo (`duration_in_ms`) e a memória (`peak_memory_in_kb`).
 6. Explique a complexidade de tempo e de espaço.
 7. Se a execução falhar, estourar o tempo ou for ineficiente, corrija o código e \
 repita a partir do passo 3. São no máximo {_MAX_FIX_ATTEMPTS} tentativas de \
