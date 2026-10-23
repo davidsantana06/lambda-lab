@@ -1,0 +1,29 @@
+name: lambda-lab-client
+
+services:
+  client:
+    build: .
+    container_name: lambda-lab-client
+    hostname: lambda-lab-client
+    command: python /app/__main__.py
+    restart: always
+    env_file:
+      - .env
+    environment:
+      CACHE_DATABASE_URL: sqlite:////data/client.db
+      PYTHONDONTWRITEBYTECODE: "1"
+    ports:
+      - "9002:9002"
+    volumes:
+      - ./app:/app
+      - sqlitedata:/data
+    networks:
+      - lambda-lab-network
+
+networks:
+  lambda-lab-network:
+    name: lambda-lab-network
+    external: true
+
+volumes:
+  sqlitedata:
