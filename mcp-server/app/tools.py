@@ -4,6 +4,7 @@ import time
 from client import compose_search_params, request
 from models import Algorithm, AlgorithmValidation, Execution, ExecutionStatus
 
+
 _EXECUTION_WAIT_IN_SECONDS = 5
 _EXECUTION_POLL_INTERVAL_IN_SECONDS = 0.2
 _UNFINISHED_STATUSES = ("pending", "running")
@@ -194,12 +195,14 @@ def execute_algorithm(
     execution = Execution.model_validate(
         request("POST", f"/algorithms/{algorithm_id}/executions", json=payload)
     )
+
     deadline = time.monotonic() + _EXECUTION_WAIT_IN_SECONDS
     while execution.status in _UNFINISHED_STATUSES and time.monotonic() < deadline:
         time.sleep(_EXECUTION_POLL_INTERVAL_IN_SECONDS)
         execution = Execution.model_validate(
             request("GET", f"/executions/{execution.id}")
         )
+
     return execution
 
 

@@ -13,6 +13,7 @@ from tools import (
     validate_algorithm,
 )
 
+
 mcp = FastMCP(
     "lambda-lab",
     tools=[
