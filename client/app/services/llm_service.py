@@ -8,6 +8,7 @@ import asyncio
 import os
 import re
 
+
 LLM_MODEL = os.environ["LLM_MODEL"]
 LLM_REASONING_EFFORT = os.environ.get("LLM_REASONING_EFFORT", "low")
 EMBEDDING_MODEL = os.environ["EMBEDDING_MODEL"]
@@ -36,6 +37,7 @@ async def create_chat_completion(
 ) -> ChatCompletionMessage:
     if tools:
         options["tools"] = tools
+
     completion = await _request_with_retries(
         lambda: _client.chat.completions.create(
             model=model,
@@ -75,6 +77,7 @@ async def _request_with_retries(
         except APIStatusError as error:
             if not can_retry_request(error) or attempt == _TRANSIENT_ERROR_RETRIES:
                 raise
+
             await asyncio.sleep(_compose_retry_wait(error))
 
 
@@ -82,12 +85,14 @@ def _compose_retry_wait(error: APIStatusError) -> float:
     match = re.search(r"retry(?:Delay)?\D{0,8}?([0-9]+(?:\.[0-9]+)?)s", str(error))
     if match is None:
         return _DEFAULT_RETRY_WAIT_IN_SECONDS
+
     return float(match.group(1)) + 1
 
 
 def _record_token_usage(usage: Optional[CompletionUsage]) -> None:
     if usage is None:
         return
+
     token_usage["input"] += usage.prompt_tokens
     token_usage["output"] += usage.completion_tokens
     # Gemini counts thinking tokens only in the total.

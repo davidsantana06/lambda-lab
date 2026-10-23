@@ -11,6 +11,7 @@ from services.llm_service import (
 )
 from services.tools_service import call_tool, list_tools
 
+
 ToolCaller = Callable[[str, dict[str, Any]], Awaitable[dict[str, Any]]]
 
 _MAX_FIX_ATTEMPTS = 3
@@ -119,9 +120,11 @@ async def answer_question(
             reasoning_effort=LLM_REASONING_EFFORT,
         )
         messages.append(message.model_dump(exclude_none=True))
+
         if not message.tool_calls:
             answer = message.content or _EMPTY_ANSWER
             break
+
         for tool_call in message.tool_calls:
             tool_call_count += 1
             result = await _run_tool_call(tool_call, tool_caller)
@@ -137,8 +140,10 @@ async def answer_question(
         messages.append({"role": "assistant", "content": answer})
 
     history.extend(messages[turn_start:])
+
     if use_cache and tool_call_count == 0:
         save_cached_answer(question, embedding, answer)
+
     return answer, None
 
 
@@ -150,4 +155,5 @@ async def _run_tool_call(
         arguments = json.loads(tool_call.function.arguments or "{}")
     except json.JSONDecodeError as error:
         return {"error": f"tool arguments are not valid JSON: {error}"}
+
     return await tool_caller(tool_call.function.name, arguments)

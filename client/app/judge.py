@@ -19,6 +19,7 @@ from services.llm_service import (
 )
 from services.tools_service import call_tool
 
+
 _CASES_PATH = "/app/judge_cases.json"
 _REPORT_PATH = "/app/judge_report.json"
 _MAX_CASE_ATTEMPTS = 3
@@ -62,14 +63,17 @@ def load_report(restart: bool) -> dict[str, Any]:
     configuration = compose_configuration()
     if restart or not os.path.exists(_REPORT_PATH):
         return {"configuration": configuration, "cases": []}
+
     with open(_REPORT_PATH, encoding="utf-8") as file:
         report = json.load(file)
+
     # Scores from another model setup must not mix with new ones.
     if report["configuration"] != configuration:
         raise SystemExit(
             f"{_REPORT_PATH} was scored with {report['configuration']}, but the "
             f"current setup is {configuration}. Run with --restart to discard it."
         )
+
     return report
 
 
@@ -81,10 +85,12 @@ def save_report(report: dict[str, Any], cases: list[dict[str, Any]]) -> None:
         "summary": compose_summary(results, cases),
         "cases": results,
     }
+
     temporary_path = f"{_REPORT_PATH}.tmp"
     with open(temporary_path, "w", encoding="utf-8") as file:
         json.dump(content, file, ensure_ascii=False, indent=2)
         file.write("\n")
+
     # The container runs as root; give the report to the owner of the folder.
     folder = os.stat(os.path.dirname(_REPORT_PATH))
     os.chown(temporary_path, folder.st_uid, folder.st_gid)
@@ -104,6 +110,7 @@ def compose_summary(
         averages["overall"] = round(
             mean(averages[criterion] for criterion in CRITERIA), 2
         )
+
     tokens = {
         phase: {
             kind: sum(result["tokens"][phase][kind] for result in results)
@@ -139,9 +146,11 @@ async def score_case(case: dict[str, Any]) -> dict[str, Any]:
         tool_caller=record_tool_call,
     )
     agent_tokens = measure_tokens(tokens_before)
+
     tokens_before = token_usage.copy()
     verdict = await judge_answer(case, answer)
     judge_tokens = measure_tokens(tokens_before)
+
     return {
         "id": case["id"],
         "difficulty": case["difficulty"],
@@ -162,6 +171,7 @@ async def score_case_with_retries(case: dict[str, Any]) -> dict[str, Any]:
         except APIStatusError as error:
             if not can_retry_request(error) or attempt == _MAX_CASE_ATTEMPTS:
                 raise
+
             print(
                 f"  rate limited ({error.status_code}), waiting "
                 f"{_RATE_LIMIT_WAIT_IN_SECONDS}s before attempt {attempt + 1}",
@@ -189,6 +199,7 @@ def print_summary(report: dict[str, Any], cases: list[dict[str, Any]]) -> None:
     order = [case["id"] for case in cases]
     results = sorted(report["cases"], key=lambda result: order.index(result["id"]))
     summary = compose_summary(results, cases)
+
     print(f"\n{'case':<32} {'difficulty':<10} {'correct':>7} {'effic':>5} {'clar':>4}")
     for result in results:
         scores = result["scores"]
@@ -196,6 +207,7 @@ def print_summary(report: dict[str, Any], cases: list[dict[str, Any]]) -> None:
             f"{result['id']:<32} {result['difficulty']:<10} "
             f"{scores['correctness']:>7} {scores['efficiency']:>5} {scores['clarity']:>4}"
         )
+
     averages = summary["averages"]
     if averages:
         print(
@@ -203,6 +215,7 @@ def print_summary(report: dict[str, Any], cases: list[dict[str, Any]]) -> None:
             f"{averages['efficiency']:>5} {averages['clarity']:>4}"
             f"   overall {averages['overall']}"
         )
+
     print(f"\n{summary['scored_cases']} of {summary['total_cases']} cases scored")
     print(f"agent tokens: {format_tokens(summary['tokens']['agent'])}")
     print(f"judge tokens: {format_tokens(summary['tokens']['judge'])}")
@@ -213,6 +226,7 @@ async def main() -> None:
     arguments = parse_arguments()
     cases = load_cases()
     report = load_report(arguments.restart)
+
     scored_ids = {result["id"] for result in report["cases"]}
     pending_cases = [case for case in cases if case["id"] not in scored_ids]
     pending_cases = pending_cases[: arguments.limit]
@@ -220,12 +234,14 @@ async def main() -> None:
         f"{len(scored_ids)} of {len(cases)} cases already scored, "
         f"scoring {len(pending_cases)} now with {report['configuration']}"
     )
+
     stopped = False
     for index, case in enumerate(pending_cases, 1):
         print(
             f"\n[{index}/{len(pending_cases)}] {case['id']} ({case['difficulty']})",
             flush=True,
         )
+
         try:
             result = await score_case_with_retries(case)
         except Exception as error:
@@ -241,10 +257,13 @@ async def main() -> None:
             print("  scored cases are saved; run again later to resume")
             stopped = True
             break
+
         report["cases"].append(result)
         save_report(report, cases)
         print_case_result(result)
+
     print_summary(report, cases)
+
     if stopped:
         raise SystemExit(1)
 

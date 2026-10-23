@@ -7,6 +7,7 @@ from database import get_session
 from models import CachedAnswer
 from services.llm_service import EMBEDDING_MODEL
 
+
 _CACHE_SIMILARITY_THRESHOLD = float(
     os.environ.get("CACHE_SIMILARITY_THRESHOLD", "0.90")
 )
@@ -20,6 +21,7 @@ def find_cached_answer(
             CachedAnswer.embedding_model == EMBEDDING_MODEL
         )
         cached_answers = session.exec(statement).all()
+
     scored_answers = [
         (cached_answer, _compute_cosine_similarity(embedding, cached_answer.embedding))
         for cached_answer in cached_answers
@@ -27,6 +29,7 @@ def find_cached_answer(
     best_match = max(scored_answers, key=lambda pair: pair[1], default=None)
     if best_match is None or best_match[1] < _CACHE_SIMILARITY_THRESHOLD:
         return None
+
     return best_match
 
 
@@ -46,4 +49,5 @@ def _compute_cosine_similarity(first: list[float], second: list[float]) -> float
     norms = math.sqrt(math.sumprod(first, first) * math.sumprod(second, second))
     if not norms:
         return 0.0
+
     return math.sumprod(first, second) / norms

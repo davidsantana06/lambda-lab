@@ -43,11 +43,13 @@ async def answer_message(message: cl.Message):
     except Exception as error:
         await cl.Message(content=f"Algo deu errado ao responder: {error}").send()
         return
+
     if cache_similarity is not None:
         similarity = f"{cache_similarity:.2f}".replace(".", ",")
         answer = (
             f"*♻️ Resposta do cache semântico (similaridade {similarity}).*\n\n{answer}"
         )
+
     await cl.Message(content=answer).send()
 
 
@@ -57,4 +59,5 @@ async def call_tool_in_step(name: str, arguments: dict[str, Any]) -> dict[str, A
         result = await call_tool(name, arguments)
         step.output = result
         step.is_error = "error" in result
+
     return result

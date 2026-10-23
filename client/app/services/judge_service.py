@@ -4,6 +4,7 @@ import os
 
 from services.llm_service import create_chat_completion
 
+
 JUDGE_MODEL = os.environ["JUDGE_MODEL"]
 CRITERIA = ("correctness", "efficiency", "clarity")
 
@@ -85,4 +86,5 @@ def _parse_verdict(content: str) -> dict[str, Any]:
         for score in scores.values()
     ):
         raise ValueError(f"judge returned invalid scores: {content}")
+
     return {**scores, "justification": str(verdict.get("justification", "")).strip()}
