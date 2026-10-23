@@ -1,7 +1,12 @@
 from typing import Any, Optional
+import time
 
 from client import compose_search_params, request
 from models import Algorithm, AlgorithmValidation, Execution, ExecutionStatus
+
+_EXECUTION_WAIT_IN_SECONDS = 5
+_EXECUTION_POLL_INTERVAL_IN_SECONDS = 0.2
+_UNFINISHED_STATUSES = ("pending", "running")
 
 
 def check_algorithm_service_health() -> dict[str, str]:
@@ -164,12 +169,15 @@ def execute_algorithm(
     algorithm_id: int,
     arguments: Optional[dict[str, Any]] = None,
 ) -> Execution:
-    """Start a new execution of a saved algorithm with the given arguments.
+    """Run a saved algorithm with the given arguments and wait for the result.
 
-    The execution runs in the background, so this returns at once with status
-    "pending" and the execution id. Then call get_execution with that id until
-    the status is completed, failed or timed_out. Every call runs the
-    algorithm again: results are never cached.
+    The execution runs in the background, and this tool waits up to 5 seconds
+    for it to finish. Most executions finish in that time and come back as
+    completed, failed or timed_out, with the same fields as get_execution
+    (result, stdout, error, duration_in_ms and peak_memory_in_kb), so there is
+    no need to call get_execution. A slower execution comes back still pending
+    or running: then call get_execution with its id until it finishes. Every
+    call runs the algorithm again: results are never cached.
 
     Args:
         algorithm_id: Id of the algorithm to run, as returned by
@@ -179,13 +187,20 @@ def execute_algorithm(
             Leave it empty when the entry point takes no parameters.
 
     Returns:
-        The new execution, with its id, algorithm_id, arguments and status
-        "pending".
+        The execution, finished or still running, with the same fields as
+        get_execution.
     """
     payload = {"arguments": arguments or {}}
-    return Execution.model_validate(
+    execution = Execution.model_validate(
         request("POST", f"/algorithms/{algorithm_id}/executions", json=payload)
     )
+    deadline = time.monotonic() + _EXECUTION_WAIT_IN_SECONDS
+    while execution.status in _UNFINISHED_STATUSES and time.monotonic() < deadline:
+        time.sleep(_EXECUTION_POLL_INTERVAL_IN_SECONDS)
+        execution = Execution.model_validate(
+            request("GET", f"/executions/{execution.id}")
+        )
+    return execution
 
 
 def get_execution(execution_id: int) -> Execution:
