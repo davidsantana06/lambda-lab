@@ -1,0 +1,22 @@
+name: lambda-lab-mcp-server
+
+services:
+  mcp-server:
+    build: .
+    container_name: lambda-lab-mcp-server
+    hostname: lambda-lab-mcp-server
+    command: python /app/__main__.py
+    restart: always
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+    ports:
+      - "9001:9001"
+    volumes:
+      - ./app:/app
+    networks:
+      - lambda-lab-network
+
+networks:
+  lambda-lab-network:
+    name: lambda-lab-network
+    external: true
