@@ -11,7 +11,6 @@ import re
 
 LLM_MODEL = os.environ["LLM_MODEL"]
 LLM_REASONING_EFFORT = os.environ.get("LLM_REASONING_EFFORT", "low")
-EMBEDDING_MODEL = os.environ["EMBEDDING_MODEL"]
 # 429 (limite de requisições) e 503 (sobrecarga) costumam passar com uma breve espera.
 TRANSIENT_STATUS_CODES = (429, 503)
 
@@ -46,13 +45,6 @@ async def create_chat_completion(
     )
     _record_token_usage(completion.usage)
     return completion.choices[0].message
-
-
-async def create_embedding(text: str) -> list[float]:
-    response = await _request_with_retries(
-        lambda: _client.embeddings.create(model=EMBEDDING_MODEL, input=text)
-    )
-    return response.data[0].embedding
 
 
 # Espera acima do teto indica cota diária ou saldo esgotado, e esperar não resolve.

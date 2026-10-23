@@ -1,53 +1,73 @@
-from sqlmodel import select
+from chromadb.api.models.Collection import Collection
+from chromadb.config import Settings
+from functools import cache
+from sentence_transformers import SentenceTransformer
 from typing import Optional
-import math
+import asyncio
+import chromadb
 import os
-
-from database import get_session
-from models import CachedAnswer
-from services.llm_service import EMBEDDING_MODEL
+import uuid
 
 
+# O Dockerfile baixa este modelo no build.
+_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+_CACHE_PATH = "/data/cache"
+_CACHE_COLLECTION = "answers"
 _CACHE_SIMILARITY_THRESHOLD = float(
     os.environ.get("CACHE_SIMILARITY_THRESHOLD", "0.90")
 )
 
 
-def find_cached_answer(
-    embedding: list[float],
-) -> Optional[tuple[CachedAnswer, float]]:
-    with get_session() as session:
-        statement = select(CachedAnswer).where(
-            CachedAnswer.embedding_model == EMBEDDING_MODEL
-        )
-        cached_answers = session.exec(statement).all()
+# Carrega o modelo na subida do chat, e não no juiz, que dispensa o cache.
+def prepare_cache() -> None:
+    _load_embedding_model()
+    _get_collection()
 
-    scored_answers = [
-        (cached_answer, _compute_cosine_similarity(embedding, cached_answer.embedding))
-        for cached_answer in cached_answers
-    ]
-    best_match = max(scored_answers, key=lambda pair: pair[1], default=None)
-    if best_match is None or best_match[1] < _CACHE_SIMILARITY_THRESHOLD:
+
+async def create_embedding(text: str) -> list[float]:
+    embedding = await asyncio.to_thread(_load_embedding_model().encode, text)
+    return embedding.tolist()
+
+
+# O Chroma devolve a distância de cosseno, que é 1 menos a similaridade.
+def find_cached_answer(embedding: list[float]) -> Optional[tuple[str, float]]:
+    result = _get_collection().query(
+        query_embeddings=[embedding],
+        n_results=1,
+        include=["metadatas", "distances"],
+    )
+    if not result["ids"][0]:
         return None
 
-    return best_match
+    similarity = 1 - result["distances"][0][0]
+    if similarity < _CACHE_SIMILARITY_THRESHOLD:
+        return None
+
+    return result["metadatas"][0][0]["answer"], similarity
 
 
 def save_cached_answer(question: str, embedding: list[float], answer: str) -> None:
-    cached_answer = CachedAnswer(
-        question=question,
-        answer=answer,
-        embedding=embedding,
-        embedding_model=EMBEDDING_MODEL,
+    _get_collection().add(
+        ids=[str(uuid.uuid4())],
+        embeddings=[embedding],
+        documents=[question],
+        metadatas=[{"answer": answer}],
     )
-    with get_session() as session:
-        session.add(cached_answer)
-        session.commit()
 
 
-def _compute_cosine_similarity(first: list[float], second: list[float]) -> float:
-    norms = math.sqrt(math.sumprod(first, first) * math.sumprod(second, second))
-    if not norms:
-        return 0.0
+@cache
+def _load_embedding_model() -> SentenceTransformer:
+    return SentenceTransformer(_EMBEDDING_MODEL, device="cpu", local_files_only=True)
 
-    return math.sumprod(first, second) / norms
+
+@cache
+def _get_collection() -> Collection:
+    client = chromadb.PersistentClient(
+        path=_CACHE_PATH,
+        settings=Settings(anonymized_telemetry=False),
+    )
+    return client.get_or_create_collection(
+        _CACHE_COLLECTION,
+        configuration={"hnsw": {"space": "cosine"}},
+        embedding_function=None,
+    )

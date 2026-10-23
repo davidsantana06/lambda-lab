@@ -3,12 +3,12 @@ from openai.types.chat import ChatCompletionMessageFunctionToolCall
 from typing import Any, Optional
 import json
 
-from services.cache_service import find_cached_answer, save_cached_answer
-from services.llm_service import (
-    LLM_REASONING_EFFORT,
-    create_chat_completion,
+from services.cache_service import (
     create_embedding,
+    find_cached_answer,
+    save_cached_answer,
 )
+from services.llm_service import LLM_REASONING_EFFORT, create_chat_completion
 from services.tools_service import call_tool, list_tools
 
 
@@ -110,9 +110,9 @@ async def answer_question(
         if cache_match is not None:
             cached_answer, similarity = cache_match
             history.extend(
-                [user_message, {"role": "assistant", "content": cached_answer.answer}]
+                [user_message, {"role": "assistant", "content": cached_answer}]
             )
-            return cached_answer.answer, similarity
+            return cached_answer, similarity
 
     tools = await list_tools()
     messages = [{"role": "system", "content": _SYSTEM_PROMPT}, *history, user_message]

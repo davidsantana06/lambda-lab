@@ -2,15 +2,15 @@ from openai import APIError, APIStatusError
 from typing import Any
 import chainlit as cl
 
-from database import create_tables
 from services.agent_service import answer_question
+from services.cache_service import prepare_cache
 from services.llm_service import TRANSIENT_STATUS_CODES
 from services.tools_service import call_tool
 
 
 @cl.on_app_startup
 async def start_app():
-    create_tables()
+    prepare_cache()
 
 
 @cl.on_chat_start
