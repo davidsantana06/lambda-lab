@@ -2,7 +2,12 @@
 
 ## 🧩 Módulos
 
-São três módulos, listados na ordem em que devem subir. O serviço cria a rede usada pelo servidor MCP, e o cliente depende do servidor MCP.
+O sistema é composto por três módulos com dependência unidirecional: o usuário interage diretamente com o cliente, que se integra ao modelo de linguagem (Gemini) e aciona o servidor MCP, responsável, por sua vez, por consumir os endpoints do serviço.
+
+<div align="center">
+  <img src="./assets/architecture.png" alt="Arquitetura Lambda Lab" width="100%">
+  <p><sub>ARQUITETURA DO LAMBDA LAB</sub></p>
+</div>
 
 ### ⚙️ `lambda-lab-service/`
 
