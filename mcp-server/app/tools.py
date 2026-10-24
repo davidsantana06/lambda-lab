@@ -11,13 +11,14 @@ _UNFINISHED_STATUSES = ("pending", "running")
 
 
 def check_algorithm_service_health() -> dict[str, str]:
-    """Check that the algorithm service is reachable and answering requests.
+    """Verifica se o serviço de algoritmos está acessível e respondendo.
 
-    Use this to tell a service outage apart from a search that simply found
-    nothing, or when other tools keep failing to reach the service.
+    Use para distinguir uma indisponibilidade do serviço de uma busca que
+    simplesmente não encontrou nada, ou quando outras ferramentas falham
+    repetidamente ao acessar o serviço.
 
     Returns:
-        The reported status, such as {"status": "ok", "service": "algorithm"}.
+        O status informado, como {"status": "ok", "service": "algorithm"}.
     """
     return request("GET", "/health")
 
@@ -26,24 +27,25 @@ def validate_algorithm(
     source_code: str,
     entry_point: str = "solve",
 ) -> AlgorithmValidation:
-    """Check an algorithm's source code without saving or running it.
+    """Verifica o código-fonte de um algoritmo sem salvá-lo nem executá-lo.
 
-    Parses the Python source code and checks that the entry point is a plain
-    function defined at module level, not nested, async or a lambda. Use this
-    before create_algorithm to catch syntax errors early. The code is not run,
-    so runtime errors only show up in an execution.
+    Analisa o código Python e confere se o ponto de entrada é uma função comum
+    definida no nível do módulo, e não aninhada, assíncrona ou lambda. Use
+    antes de create_algorithm para detectar erros de sintaxe cedo. O código
+    não é executado, então erros em tempo de execução só aparecem ao
+    executá-lo.
 
-    The result has valid set to true when the code is ready to be saved.
-    Otherwise valid is false and message explains the problem, with the
-    1-based line and column of a syntax error. Line and column are empty when
-    the problem is a missing entry point.
+    O resultado tem valid igual a true quando o código está pronto para ser
+    salvo. Caso contrário, valid é false e message explica o problema, com a
+    linha e a coluna (contadas a partir de 1) de um erro de sintaxe. Os campos
+    line e column ficam vazios quando o problema é a falta do ponto de entrada.
 
     Args:
-        source_code: Complete Python 3.12 module that defines the entry point.
-        entry_point: Name of the function that executions will call.
+        source_code: Módulo Python 3.12 completo que define o ponto de entrada.
+        entry_point: Nome da função que as execuções vão chamar.
 
     Returns:
-        The validation result, with valid, line, column and message.
+        O resultado da validação, com valid, line, column e message.
     """
     payload = {"source_code": source_code, "entry_point": entry_point}
     return AlgorithmValidation.model_validate(
@@ -57,37 +59,40 @@ def create_algorithm(
     source_code: str,
     entry_point: str = "solve",
 ) -> Algorithm:
-    """Save a new algorithm so that it can be executed.
+    """Salva um novo algoritmo para que ele possa ser executado.
 
-    The source code is validated first, exactly like validate_algorithm, and
-    nothing is saved when it is invalid: the tool fails with the line, column
-    and message of the error. Saved algorithms can never be edited or deleted,
-    so fixing one means creating a new algorithm, such as "two_sum_v2". On
-    success, it returns the saved algorithm with the id that
-    execute_algorithm needs.
+    O código-fonte é validado antes, exatamente como em validate_algorithm, e
+    nada é salvo quando ele é inválido: a ferramenta falha com a linha, a
+    coluna e a mensagem do erro. Algoritmos salvos nunca podem ser editados
+    nem apagados, então corrigir um significa criar um novo algoritmo, como
+    "two_sum_v2". Em caso de sucesso, devolve o algoritmo salvo com o id de
+    que execute_algorithm precisa.
 
-    The code must follow the execution contract:
-    - executions call the entry point with keyword arguments only, as in
-      solve(**arguments), so its parameter names must match those keys;
-    - the entry point returns the result, and prints are kept apart in the
-      execution's stdout, so print only for diagnostics;
-    - return JSON values (numbers, strings, booleans, None, lists, and dicts
-      with string keys); anything else, such as a set, comes back as its repr;
-    - rely on the Python standard library only;
-    - module-level code runs once before the call and is not timed, and
-      blocks guarded by if __name__ == "__main__" never run;
-    - each execution has a 10-second timeout and a 256 MB memory limit.
+    O código deve seguir o contrato de execução:
+    - as execuções chamam o ponto de entrada só com argumentos nomeados, como
+      em solve(**arguments), então os nomes dos parâmetros devem ser iguais a
+      essas chaves;
+    - o ponto de entrada devolve o resultado, e os prints ficam separados, no
+      stdout da execução, então use print só para diagnóstico;
+    - devolva valores JSON (números, textos, booleanos, None, listas e
+      dicionários com chaves de texto); qualquer outro valor, como um set,
+      volta como o seu repr;
+    - use apenas a biblioteca padrão do Python;
+    - o código no nível do módulo roda uma vez antes da chamada e fica fora da
+      medição de tempo, e blocos protegidos por if __name__ == "__main__"
+      nunca rodam;
+    - cada execução tem limite de 10 segundos e de 256 MB de memória.
 
     Args:
-        name: Short identifier of the algorithm, such as "fibonacci_dp".
-        description: Problem the algorithm solves and the strategy it uses,
-            such as "Fibonacci numbers by bottom-up dynamic programming".
-        source_code: Complete Python 3.12 module that defines the entry point.
-        entry_point: Name of the function that executions will call.
+        name: Identificador curto do algoritmo, como "fibonacci_dp".
+        description: Problema que o algoritmo resolve e a estratégia que ele
+            usa, como "Números de Fibonacci por programação dinâmica bottom-up".
+        source_code: Módulo Python 3.12 completo que define o ponto de entrada.
+        entry_point: Nome da função que as execuções vão chamar.
 
     Returns:
-        The saved algorithm, with its id, name, description, source code,
-        entry point and timestamps.
+        O algoritmo salvo, com id, nome, descrição, código-fonte, ponto de
+        entrada e datas de criação e de atualização.
     """
     payload = {
         "name": name,
@@ -99,20 +104,20 @@ def create_algorithm(
 
 
 def list_algorithms(limit: int = 50, offset: int = 0) -> list[Algorithm]:
-    """List the algorithms saved in Lambda Lab.
+    """Lista os algoritmos salvos no Lambda Lab.
 
-    Returns algorithms in creation order, without any filtering. Use this to
-    browse them or page through them; use search_algorithms instead when
-    looking for an algorithm by name or description.
+    Devolve os algoritmos em ordem de criação, sem nenhum filtro. Use para
+    navegar por eles ou paginá-los; para procurar um algoritmo por nome ou
+    descrição, use search_algorithms.
 
     Args:
-        limit: Maximum number of algorithms to return.
-        offset: How many algorithms to skip, for pagination.
+        limit: Número máximo de algoritmos a devolver.
+        offset: Quantos algoritmos pular, para paginação.
 
     Returns:
-        The algorithms found, each with its id, name, description, source
-        code, entry point and timestamps. Empty when the offset goes past the
-        last algorithm.
+        Os algoritmos encontrados, cada um com id, nome, descrição,
+        código-fonte, ponto de entrada e datas de criação e de atualização. A
+        lista fica vazia quando o offset passa do último algoritmo.
     """
     payload = request("GET", "/algorithms", params={"limit": limit, "offset": offset})
     return [Algorithm.model_validate(item) for item in payload]
@@ -124,22 +129,24 @@ def search_algorithms(
     limit: int = 50,
     offset: int = 0,
 ) -> list[Algorithm]:
-    """Search saved algorithms by name or description.
+    """Busca algoritmos salvos por nome ou descrição.
 
-    Filters combine with AND, so passing both narrows the result. Both are
-    case-insensitive partial matches, so "fib" matches "fibonacci_dp". Omitting
-    every filter returns all algorithms, exactly like list_algorithms. Use this
-    to find an algorithm that already solves a problem before writing a new one.
+    Os filtros se combinam com E (AND), então passar os dois restringe o
+    resultado. Ambos buscam um trecho do texto, sem diferenciar maiúsculas de
+    minúsculas, então "fib" encontra "fibonacci_dp". Sem nenhum filtro,
+    devolve todos os algoritmos, exatamente como list_algorithms. Use para
+    encontrar um algoritmo que já resolva o problema antes de escrever um novo.
 
     Args:
-        name: Text to look for anywhere in the algorithm name.
-        description: Text to look for anywhere in the description.
-        limit: Maximum number of algorithms to return.
-        offset: How many algorithms to skip, for pagination.
+        name: Texto a procurar em qualquer parte do nome do algoritmo.
+        description: Texto a procurar em qualquer parte da descrição.
+        limit: Número máximo de algoritmos a devolver.
+        offset: Quantos algoritmos pular, para paginação.
 
     Returns:
-        The matching algorithms, each with its id, name, description, source
-        code, entry point and timestamps. Empty when nothing matches.
+        Os algoritmos encontrados, cada um com id, nome, descrição,
+        código-fonte, ponto de entrada e datas de criação e de atualização. A
+        lista fica vazia quando nada corresponde.
     """
     filters = {"name": name, "description": description}
     payload = request(
@@ -151,17 +158,17 @@ def search_algorithms(
 
 
 def get_algorithm(algorithm_id: int) -> Algorithm:
-    """Get one saved algorithm by its id, including the full source code.
+    """Obtém um algoritmo salvo pelo id, com o código-fonte completo.
 
-    Use this to read the code of an algorithm before running or fixing it. The
-    tool fails with "algorithm not found" when the id does not exist.
+    Use para ler o código de um algoritmo antes de executá-lo ou corrigi-lo. A
+    ferramenta falha com "algorithm not found" quando o id não existe.
 
     Args:
-        algorithm_id: Id of the algorithm, as returned by create_algorithm.
+        algorithm_id: Id do algoritmo, como devolvido por create_algorithm.
 
     Returns:
-        The algorithm with its id, name, description, source code, entry point
-        and timestamps.
+        O algoritmo, com id, nome, descrição, código-fonte, ponto de entrada e
+        datas de criação e de atualização.
     """
     return Algorithm.model_validate(request("GET", f"/algorithms/{algorithm_id}"))
 
@@ -170,25 +177,27 @@ def execute_algorithm(
     algorithm_id: int,
     arguments: Optional[dict[str, Any]] = None,
 ) -> Execution:
-    """Run a saved algorithm with the given arguments and wait for the result.
+    """Executa um algoritmo salvo com os argumentos dados e espera o resultado.
 
-    The execution runs in the background, and this tool waits up to 5 seconds
-    for it to finish. Most executions finish in that time and come back as
-    completed, failed or timed_out, with the same fields as get_execution
-    (result, stdout, error, duration_in_ms and peak_memory_in_kb), so there is
-    no need to call get_execution. A slower execution comes back still pending
-    or running: then call get_execution with its id until it finishes. Every
-    call runs the algorithm again: results are never cached.
+    A execução roda em segundo plano, e esta ferramenta espera até 5 segundos
+    que ela termine. A maioria das execuções termina nesse tempo e volta como
+    completed, failed ou timed_out, com os mesmos campos de get_execution
+    (result, stdout, error, duration_in_ms e peak_memory_in_kb), então não é
+    preciso chamar get_execution. Uma execução mais lenta volta ainda pending
+    ou running: nesse caso, chame get_execution com o id dela até que termine.
+    Cada chamada executa o algoritmo de novo: os resultados nunca vão para
+    cache.
 
     Args:
-        algorithm_id: Id of the algorithm to run, as returned by
+        algorithm_id: Id do algoritmo a executar, como devolvido por
             create_algorithm.
-        arguments: Keyword arguments for the entry point, as an object whose
-            keys are its parameter names, such as {"n": 10} for solve(n).
-            Leave it empty when the entry point takes no parameters.
+        arguments: Argumentos nomeados do ponto de entrada, em um objeto cujas
+            chaves são os nomes dos parâmetros, por exemplo {"n": 10} para
+            solve(n). Deixe vazio quando o ponto de entrada não recebe
+            parâmetros.
 
     Returns:
-        The execution, finished or still running, with the same fields as
+        A execução, terminada ou ainda em andamento, com os mesmos campos de
         get_execution.
     """
     payload = {"arguments": arguments or {}}
@@ -207,51 +216,52 @@ def execute_algorithm(
 
 
 def get_execution(execution_id: int) -> Execution:
-    """Monitor one execution: its status and, once finished, result, time and memory.
+    """Monitora uma execução: o status e, ao terminar, resultado, tempo e memória.
 
-    The status goes from pending to running and ends as completed, failed or
-    timed_out. While it is pending or running, call this tool again. A finished
-    execution never changes. The tool fails with "execution not found" when
-    the id does not exist.
+    O status vai de pending para running e termina como completed, failed ou
+    timed_out. Enquanto estiver pending ou running, chame esta ferramenta de
+    novo. Uma execução terminada nunca muda. A ferramenta falha com
+    "execution not found" quando o id não existe.
 
-    Besides the status, the execution reports:
-    - result: the entry point's return value, only when completed. Values that
-      are not JSON, such as sets or integers with thousands of digits, come as
-      their repr string;
-    - stdout: what the algorithm printed, cut after 10,000 characters;
-    - error: the traceback when failed, or the timeout message when timed_out;
-    - duration_in_ms: time spent inside the entry-point call. For timed_out
-      executions, the wall-clock time until it was stopped;
-    - elapsed_in_ms: time since the execution started, only while running;
-    - peak_memory_in_kb: peak resident memory of the whole process, including
-      about 9 MB of interpreter baseline. Empty when timed_out;
-    - started_at, finished_at and created_at timestamps.
+    Além do status, a execução informa:
+    - result: o valor devolvido pelo ponto de entrada, só quando completed.
+      Valores que não são JSON, como sets ou inteiros com milhares de dígitos,
+      vêm como a string do seu repr;
+    - stdout: o que o algoritmo imprimiu, cortado após 10.000 caracteres;
+    - error: o traceback quando failed, ou a mensagem de tempo esgotado quando
+      timed_out;
+    - duration_in_ms: tempo gasto dentro da chamada ao ponto de entrada. Em
+      execuções timed_out, o tempo de relógio até ela ser interrompida;
+    - elapsed_in_ms: tempo desde o início da execução, só enquanto running;
+    - peak_memory_in_kb: pico de memória residente do processo inteiro,
+      incluindo cerca de 9 MB do próprio interpretador. Vazio quando
+      timed_out;
+    - datas e horas em started_at, finished_at e created_at.
 
     Args:
-        execution_id: Id of the execution, as returned by execute_algorithm.
+        execution_id: Id da execução, como devolvido por execute_algorithm.
 
     Returns:
-        The execution with its id, algorithm_id, arguments, status, result,
-        stdout, error, timings, peak memory and timestamps.
+        A execução, com id, algorithm_id, arguments, status, result, stdout,
+        error, tempos, pico de memória e datas.
     """
     return Execution.model_validate(request("GET", f"/executions/{execution_id}"))
 
 
 def list_executions(limit: int = 50, offset: int = 0) -> list[Execution]:
-    """List the executions of every algorithm in Lambda Lab.
+    """Lista as execuções de todos os algoritmos do Lambda Lab.
 
-    Returns executions in creation order, without any filtering. Use
-    search_executions instead to filter by status or algorithm, and
-    get_execution to monitor a single execution, since elapsed_in_ms is only
-    reported there.
+    Devolve as execuções em ordem de criação, sem nenhum filtro. Para filtrar
+    por status ou algoritmo, use search_executions; para monitorar uma única
+    execução, use get_execution, pois só ela informa elapsed_in_ms.
 
     Args:
-        limit: Maximum number of executions to return.
-        offset: How many executions to skip, for pagination.
+        limit: Número máximo de execuções a devolver.
+        offset: Quantas execuções pular, para paginação.
 
     Returns:
-        The executions found, with the same fields as get_execution. Empty
-        when the offset goes past the last execution.
+        As execuções encontradas, com os mesmos campos de get_execution. A
+        lista fica vazia quando o offset passa da última execução.
     """
     payload = request("GET", "/executions", params={"limit": limit, "offset": offset})
     return [Execution.model_validate(item) for item in payload]
@@ -263,22 +273,23 @@ def search_executions(
     limit: int = 50,
     offset: int = 0,
 ) -> list[Execution]:
-    """Search executions by status or algorithm.
+    """Busca execuções por status ou algoritmo.
 
-    Filters combine with AND and are exact matches. Use status "completed" to
-    get only successful finished runs, or algorithm_id to get the history of
-    one algorithm, such as to compare durations across inputs. Omitting every
-    filter returns all executions, exactly like list_executions.
+    Os filtros se combinam com E (AND) e exigem o valor exato. Use status
+    "completed" para obter só as execuções terminadas com sucesso, ou
+    algorithm_id para obter o histórico de um algoritmo, por exemplo para
+    comparar durações entre entradas. Sem nenhum filtro, devolve todas as
+    execuções, exatamente como list_executions.
 
     Args:
-        status: Return only executions in this status.
-        algorithm_id: Return only executions of this algorithm.
-        limit: Maximum number of executions to return.
-        offset: How many executions to skip, for pagination.
+        status: Devolve só as execuções neste status.
+        algorithm_id: Devolve só as execuções deste algoritmo.
+        limit: Número máximo de execuções a devolver.
+        offset: Quantas execuções pular, para paginação.
 
     Returns:
-        The matching executions, with the same fields as get_execution. Empty
-        when nothing matches.
+        As execuções encontradas, com os mesmos campos de get_execution. A
+        lista fica vazia quando nada corresponde.
     """
     filters = {"status": status, "algorithm_id": algorithm_id}
     payload = request(
