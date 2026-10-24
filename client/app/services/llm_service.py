@@ -63,7 +63,10 @@ async def _request_with_retries(
         try:
             return await send_request()
         except APIStatusError as error:
-            if not can_retry_request(error) or attempt == _TRANSIENT_ERROR_RETRIES:
+            should_stop_retrying = (
+                not can_retry_request(error) or attempt == _TRANSIENT_ERROR_RETRIES
+            )
+            if should_stop_retrying:
                 raise
 
             await asyncio.sleep(_compose_retry_wait(error))
