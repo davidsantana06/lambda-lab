@@ -81,10 +81,11 @@ def _compose_evaluation(case: dict[str, Any], answer: str) -> str:
 def _parse_verdict(content: str) -> dict[str, Any]:
     verdict = json.loads(content)
     scores = {criterion: verdict.get(criterion) for criterion in CRITERIA}
-    if not all(
+    has_valid_scores = all(
         isinstance(score, int) and not isinstance(score, bool) and 1 <= score <= 5
         for score in scores.values()
-    ):
+    )
+    if not has_valid_scores:
         raise ValueError(f"judge returned invalid scores: {content}")
 
     return {**scores, "justification": str(verdict.get("justification", "")).strip()}

@@ -61,7 +61,8 @@ def compose_configuration() -> dict[str, str]:
 
 def load_report(restart: bool) -> dict[str, Any]:
     configuration = compose_configuration()
-    if restart or not os.path.exists(_REPORT_PATH):
+    should_start_fresh = restart or not os.path.exists(_REPORT_PATH)
+    if should_start_fresh:
         return {"configuration": configuration, "cases": []}
 
     with open(_REPORT_PATH, encoding="utf-8") as file:
@@ -169,7 +170,10 @@ async def score_case_with_retries(case: dict[str, Any]) -> dict[str, Any]:
         try:
             return await score_case(case)
         except APIStatusError as error:
-            if not can_retry_request(error) or attempt == _MAX_CASE_ATTEMPTS:
+            should_stop_retrying = (
+                not can_retry_request(error) or attempt == _MAX_CASE_ATTEMPTS
+            )
+            if should_stop_retrying:
                 raise
 
             print(
