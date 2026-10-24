@@ -58,6 +58,7 @@ async def call_tool_in_step(name: str, arguments: dict[str, Any]) -> dict[str, A
         step.input = arguments
         result = await call_tool(name, arguments)
         step.output = result
-        step.is_error = "error" in result
+        # Falhas da ferramenta trazem só a chave error; execuções sempre têm esse campo.
+        step.is_error = result.keys() == {"error"}
 
     return result
