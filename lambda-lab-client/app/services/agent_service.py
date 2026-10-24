@@ -6,6 +6,7 @@ import json
 from services.cache_service import (
     create_embedding,
     find_cached_answer,
+    find_repeated_answer,
     save_cached_answer,
 )
 from services.llm_service import LLM_REASONING_EFFORT, create_chat_completion
@@ -94,17 +95,18 @@ _STEP_LIMIT_ANSWER = (
 _EMPTY_ANSWER = "O modelo não devolveu uma resposta. Tente perguntar de novo."
 
 
-# Responde e estende o histórico; devolve a similaridade se a resposta veio do cache.
-# Só a primeira mensagem do chat consulta o cache, que guarda respostas sem ferramentas.
+# Responde e estende o histórico; devolve a origem se a resposta veio do cache.
+# A primeira mensagem consulta o cache semântico, e as seguintes, as repetições do chat.
+# Os dois só reaproveitam respostas dadas sem ferramentas.
 async def answer_question(
     question: str,
     history: list[dict[str, Any]],
     bypass_cache: bool = False,
     tool_caller: ToolCaller = call_tool,
-) -> tuple[str, Optional[float]]:
+) -> tuple[str, Optional[dict[str, Any]]]:
     user_message = {"role": "user", "content": question}
-    use_cache = not history and not bypass_cache
-    if use_cache:
+    use_semantic_cache = not history and not bypass_cache
+    if use_semantic_cache:
         embedding = await create_embedding(question)
         cache_match = find_cached_answer(embedding)
         if cache_match is not None:
@@ -112,7 +114,16 @@ async def answer_question(
             history.extend(
                 [user_message, {"role": "assistant", "content": cached_answer}]
             )
-            return cached_answer, similarity
+            return cached_answer, {"source": "semantic", "similarity": similarity}
+
+    use_conversation_cache = bool(history) and not bypass_cache
+    if use_conversation_cache:
+        repeated_answer = find_repeated_answer(question, history)
+        if repeated_answer is not None:
+            history.extend(
+                [user_message, {"role": "assistant", "content": repeated_answer}]
+            )
+            return repeated_answer, {"source": "conversation"}
 
     tools = await list_tools()
     messages = [{"role": "system", "content": _SYSTEM_PROMPT}, *history, user_message]
@@ -146,7 +157,9 @@ async def answer_question(
 
     history.extend(messages[turn_start:])
 
-    should_cache_answer = use_cache and tool_call_count == 0 and answer != _EMPTY_ANSWER
+    should_cache_answer = (
+        use_semantic_cache and tool_call_count == 0 and answer != _EMPTY_ANSWER
+    )
     if should_cache_answer:
         save_cached_answer(question, embedding, answer)
 

@@ -2,7 +2,7 @@ from chromadb.api.models.Collection import Collection
 from chromadb.config import Settings
 from functools import cache
 from sentence_transformers import SentenceTransformer
-from typing import Optional
+from typing import Any, Optional
 import asyncio
 import chromadb
 import os
@@ -16,6 +16,7 @@ _CACHE_COLLECTION = "answers"
 _CACHE_SIMILARITY_THRESHOLD = float(
     os.environ.get("CACHE_SIMILARITY_THRESHOLD", "0.90")
 )
+_TRAILING_PUNCTUATION = ".,;:!?…"
 
 
 # Carrega o modelo na subida do chat, e não no juiz, que dispensa o cache.
@@ -55,6 +56,25 @@ def save_cached_answer(question: str, embedding: list[float], answer: str) -> No
     )
 
 
+# Não reaproveita se a mesma pergunta já chamou tools, cujos dados são dinâmicos.
+def find_repeated_answer(question: str, history: list[dict[str, Any]]) -> Optional[str]:
+    normalized_question = _normalize_question(question)
+    repeated_turns = [
+        turn
+        for turn in _split_turns(history)
+        if _normalize_question(turn[0]["content"]) == normalized_question
+    ]
+    used_tools = any(
+        message["role"] == "tool" for turn in repeated_turns for message in turn
+    )
+    should_reuse_answer = bool(repeated_turns) and not used_tools
+    if not should_reuse_answer:
+        return None
+
+    # Uma resposta vazia do modelo fica no histórico sem conteúdo.
+    return repeated_turns[-1][-1].get("content") or None
+
+
 @cache
 def _load_embedding_model() -> SentenceTransformer:
     return SentenceTransformer(_EMBEDDING_MODEL, device="cpu", local_files_only=True)
@@ -71,3 +91,20 @@ def _get_collection() -> Collection:
         configuration={"hnsw": {"space": "cosine"}},
         embedding_function=None,
     )
+
+
+# Cada turno vai de uma mensagem do usuário até a próxima.
+def _split_turns(history: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    turns = []
+    for message in history:
+        if message["role"] == "user":
+            turns.append([])
+
+        turns[-1].append(message)
+
+    return turns
+
+
+# Ignora caixa, espaços extras e pontuação final.
+def _normalize_question(question: str) -> str:
+    return " ".join(question.lower().split()).rstrip(f"{_TRAILING_PUNCTUATION} ")

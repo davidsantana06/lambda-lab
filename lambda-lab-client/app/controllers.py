@@ -22,7 +22,7 @@ async def start_chat():
 async def answer_message(message: cl.Message):
     history = cl.user_session.get("history")
     try:
-        answer, cache_similarity = await answer_question(
+        answer, cache_hit = await answer_question(
             message.content,
             history,
             tool_caller=call_tool_in_step,
@@ -44,11 +44,8 @@ async def answer_message(message: cl.Message):
         await cl.Message(content=f"Algo deu errado ao responder: {error}").send()
         return
 
-    if cache_similarity is not None:
-        similarity = f"{cache_similarity:.2f}".replace(".", ",")
-        answer = (
-            f"*♻️ Resposta do cache semântico (similaridade {similarity}).*\n\n{answer}"
-        )
+    if cache_hit is not None:
+        answer = f"*♻️ {compose_cache_notice(cache_hit)}*\n\n{answer}"
 
     await cl.Message(content=answer).send()
 
@@ -62,3 +59,11 @@ async def call_tool_in_step(name: str, arguments: dict[str, Any]) -> dict[str, A
         step.is_error = result.keys() == {"error"}
 
     return result
+
+
+def compose_cache_notice(cache_hit: dict[str, Any]) -> str:
+    if cache_hit["source"] == "conversation":
+        return "Resposta do cache desta conversa."
+
+    similarity = f"{cache_hit['similarity']:.2f}".replace(".", ",")
+    return f"Resposta do cache semântico (similaridade {similarity})."
