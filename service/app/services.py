@@ -173,7 +173,8 @@ def run_execution(execution_id: int) -> None:
 
 def monitor_execution(execution: Execution) -> ExecutionRead:
     monitoring = ExecutionRead.model_validate(execution)
-    if execution.status == "running" and execution.started_at is not None:
+    is_running = execution.status == "running" and execution.started_at is not None
+    if is_running:
         started_at = execution.started_at.replace(tzinfo=timezone.utc)
         elapsed = datetime.now(timezone.utc) - started_at
         monitoring.elapsed_in_ms = round(elapsed.total_seconds() * 1000, 3)
