@@ -70,7 +70,7 @@ Servidor FastMCP com transporte `streamable-http`. Cada ferramenta (ver tabela a
 
 ### 💬 `lambda-lab-client/`
 
-Chat Chainlit responsável por acionar modelos de linguagem (Gemini) e tools (descritas acima). Conta com cache semântico local para perguntas repetidas, desde que não acionem tools, além de um juiz LLM que avalia a corretude, eficiência e clareza das respostas. O Chainlit roda em http://localhost:9002.
+Chat Chainlit responsável por acionar modelos de linguagem (Gemini) e tools (descritas acima). Conta com cache semântico local e cache da conversa para perguntas repetidas, desde que não acionem tools, além de um juiz LLM que avalia a corretude, eficiência e clareza das respostas. O Chainlit roda em http://localhost:9002.
 
 | Arquivo                     | Responsabilidade                                                 |
 | --------------------------- | ---------------------------------------------------------------- |
@@ -78,7 +78,7 @@ Chat Chainlit responsável por acionar modelos de linguagem (Gemini) e tools (de
 | `controllers.py`            | Handlers do Chainlit, que exibem cada chamada de ferramenta      |
 | `services/agent_service.py` | Motor de inferência: prompt de sistema e ligação LLM–ferramentas |
 | `services/llm_service.py`   | Chat com o Gemini                                                |
-| `services/cache_service.py` | Embeddings locais e coleção do cache semântico no ChromaDB       |
+| `services/cache_service.py` | Cache semântico (ChromaDB e embeddings locais) e da conversa     |
 | `services/tools_service.py` | Cliente MCP                                                      |
 | `services/judge_service.py` | Prompt do juiz e leitura das notas                               |
 | `judge.py`                  | Script de avaliação LLM-as-a-Judge                               |
@@ -89,6 +89,8 @@ Na raiz de `lambda-lab-client/`, ao lado do `docker-compose.yml`, ficam os 18 ca
 O prompt de sistema orienta o agente a entender o problema e justificar a estratégia. Em seguida, ele escreve e valida a função de entrada, executando-a (com um exemplo pequeno, se o usuário não der parâmetros). Por fim, relata resultado, tempo, memória e complexidade e corrige o código em até 3 tentativas. Perguntas conceituais são respondidas sem ferramentas. O laço entre LLM e ferramentas tem no máximo 26 passos, e as chamadas usam `reasoning_effort` (`low`, por padrão).
 
 O cache semântico gera o embedding da pergunta localmente, com o modelo multilíngue `paraphrase-multilingual-MiniLM-L12-v2` do sentence-transformers, sem chamar o Gemini. Uma coleção do ChromaDB guarda pergunta, embedding e resposta e devolve a distância de cosseno, convertida em similaridade (1 − distância). A partir do limiar (0,90, por padrão), a resposta vem do cache, e o chat mostra a similaridade. Só a primeira mensagem de cada chat é consultada, e só respostas dadas sem tools são guardadas.
+
+Nas mensagens seguintes, o cache da conversa procura no próprio histórico do chat a mesma pergunta, sem chamar o Gemini nem guardar nada a mais. A comparação ignora maiúsculas, espaços extras e pontuação final, então "Oi, como vai?" equivale a "oi, como vai", mas não a "Oi, tudo bem?". A resposta anterior só é reaproveitada se a pergunta nunca tiver acionado tools no chat, e o chat avisa que ela veio do cache da conversa.
 
 ## 🛠️ Instalação e execução
 
@@ -162,7 +164,7 @@ Cada chamada de ferramenta aparece na conversa como uma etapa, com argumentos e 
 
 ## ⚖️ Avaliação com LLM-as-a-Judge
 
-Situado no diretório `lambda-lab-client/app`, o script `judge.py` envia ao agente, sem passar pelo cache, cada caso de `lambda-lab-client/judge_cases.json`, cada qual com um problema, seus parâmetros, a saída esperada e a complexidade de referência. O `JUDGE_MODEL` compara a resposta com a referência e dá notas de 1 a 5 em corretude, eficiência e clareza, com uma justificativa curta.
+Situado no diretório `lambda-lab-client/app`, o script `judge.py` envia ao agente, sem passar pelos caches, cada caso de `lambda-lab-client/judge_cases.json`, cada qual com um problema, seus parâmetros, a saída esperada e a complexidade de referência. O `JUDGE_MODEL` compara a resposta com a referência e dá notas de 1 a 5 em corretude, eficiência e clareza, com uma justificativa curta.
 
 Para acioná-lo, é necessário ter o ambiente totalmente configurado (conforme descrito anteriormente). Execute-o com:
 
@@ -199,8 +201,9 @@ O `.env.example` usa como juiz o `gemini-3.6-flash`, atualmente (24/10/2026) dis
 - O `stdout` (saída padrão) é limitado a 10.000 caracteres.
 - Cada correção vira um novo algoritmo, e o banco só é limpo com `docker compose down -v`.
 - O limiar do cache semântico (0,90) foi calibrado com cerca de 50 pares de perguntas. Reformulações leves usam o cache, mas sinônimos costumam ficar abaixo do limiar, e perguntas que só trocam o nome do algoritmo, como sobre merge sort e heap sort, podem receber a resposta uma da outra.
+- Depois da primeira mensagem, só repetições exatas usam o cache. Reformulações e perguntas já feitas em outro chat vão ao Gemini.
 - Trocar o modelo de embeddings exige alterar o `cache_service.py` e o `Dockerfile` do cliente e reconstruir a imagem.
-- O histórico do chat fica na memória da sessão e se perde ao recarregar a página ou reiniciar o cliente.
+- O histórico do chat, de onde vem o cache da conversa, fica na memória da sessão e se perde ao recarregar a página ou reiniciar o cliente.
 - As notas do juiz variam um pouco entre rodadas, mesmo ao usar os mesmos modelos.
 - O Chainlit exige `mcp<2`, por isso o cliente usa FastMCP 3 e o servidor, FastMCP 4.
 - O Chainlit cria `.chainlit/` e `.files/` em `lambda-lab-client/app/` como root, e apagá-los no host exige `sudo`.
