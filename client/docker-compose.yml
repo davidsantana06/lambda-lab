@@ -15,6 +15,8 @@ services:
       - "9002:9002"
     volumes:
       - ./app:/app
+      # A pasta inteira, para o judge.py substituir ou recriar o judge_report.json.
+      - .:/client
       - chromadata:/data
     networks:
       - lambda-lab-network

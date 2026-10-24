@@ -20,8 +20,8 @@ from services.llm_service import (
 from services.tools_service import call_tool
 
 
-_CASES_PATH = "/app/judge_cases.json"
-_REPORT_PATH = "/app/judge_report.json"
+_CASES_PATH = "/client/judge_cases.json"
+_REPORT_PATH = "/client/judge_report.json"
 _MAX_CASE_ATTEMPTS = 3
 _RATE_LIMIT_WAIT_IN_SECONDS = 60
 _TOKEN_KINDS = ("input", "output", "reasoning")

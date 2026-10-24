@@ -67,8 +67,9 @@ Chat Chainlit na porta 9002. Conversa com o Gemini pelo endpoint compatível com
 | `services/tools_service.py` | Cliente MCP                                                   |
 | `services/judge_service.py` | Prompt do juiz e leitura das notas                            |
 | `judge.py`                  | Script de avaliação LLM-as-a-Judge                            |
-| `judge_cases.json`          | Os 18 casos de avaliação                                      |
 | `chainlit.md`               | Tela de apresentação do chat                                  |
+
+Na raiz de `client/`, ao lado do `docker-compose.yml`, ficam os 18 casos de avaliação (`judge_cases.json`) e o relatório do juiz (`judge_report.json`).
 
 O prompt de sistema orienta o agente a entender o problema e justificar a estratégia. Em seguida, ele escreve e valida a função `solve` e a salva e executa (com um exemplo pequeno, se o usuário não der parâmetros). Por fim, relata resultado, tempo, memória e complexidade e corrige o código em até 3 tentativas. Perguntas conceituais são respondidas sem ferramentas. O laço entre LLM e ferramentas tem no máximo 26 passos, e as chamadas usam `reasoning_effort` (`low`, por padrão).
 
@@ -139,7 +140,7 @@ Abra `http://localhost:9002` e descreva um problema, como "Encontre os índices 
 
 ## ⚖️ Avaliação com LLM-as-a-Judge
 
-O `judge.py` envia ao agente, sem passar pelo cache, cada caso de `judge_cases.json`. Cada caso traz o problema, os parâmetros, a saída esperada e a complexidade de referência. O `JUDGE_MODEL` compara a resposta com a referência e dá notas de 1 a 5 em corretude, eficiência e clareza, com uma justificativa curta. Na pasta `client`, execute:
+O `judge.py` envia ao agente, sem passar pelo cache, cada caso de `client/judge_cases.json`. Cada caso traz o problema, os parâmetros, a saída esperada e a complexidade de referência. O `JUDGE_MODEL` compara a resposta com a referência e dá notas de 1 a 5 em corretude, eficiência e clareza, com uma justificativa curta. Na pasta `client`, execute:
 
 ```bash
 docker compose exec client python /app/judge.py
@@ -150,7 +151,7 @@ docker compose exec client python /app/judge.py
 | `--limit N` | Avalia no máximo N casos ainda não avaliados |
 | `--restart` | Descarta o relatório e avalia todos os casos |
 
-Cada caso é gravado em `client/app/judge_report.json` assim que termina, com notas, justificativa, ferramentas chamadas, duração, tokens e resposta completa. Uma execução interrompida continua de onde parou. Em `429` ou `503`, o script espera e tenta de novo. Em `402` (saldo pré-pago esgotado), ele para.
+Cada caso é gravado em `client/judge_report.json` assim que termina, com notas, justificativa, ferramentas chamadas, duração, tokens e resposta completa. O compose monta a pasta `client/` inteira em `/client`, para que o relatório possa ser substituído de uma vez ou recriado depois de apagado. Uma execução interrompida continua de onde parou. Em `429` ou `503`, o script espera e tenta de novo. Em `402` (saldo pré-pago esgotado), ele para.
 
 O relatório registra os modelos usados. Se `LLM_MODEL`, `LLM_REASONING_EFFORT` ou `JUDGE_MODEL` mudarem, o script pede `--restart` para não misturar notas. Como referência, um caso fácil gastou cerca de 15 mil tokens no agente e 1,5 mil no juiz.
 
