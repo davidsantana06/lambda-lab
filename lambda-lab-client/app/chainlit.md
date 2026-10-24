@@ -9,7 +9,7 @@ O Lambda Lab é um sistema especialista que cria algoritmos executáveis sob dem
 5. explica a complexidade de tempo e de espaço;
 6. corrige o código quando a execução falha ou fica lenta demais.
 
-Cada chamada de ferramenta aparece na conversa como uma etapa, com os argumentos e o resultado. Perguntas conceituais são respondidas direto, sem executar nada, e uma pergunta parecida com outra já feita pode vir do cache semântico.
+Cada chamada de ferramenta aparece na conversa como uma etapa, com os argumentos e o resultado. Perguntas conceituais são respondidas direto, sem executar nada, e uma pergunta parecida com outra já feita pode vir do cache semântico. Uma pergunta repetida na mesma conversa vem do cache da conversa, se não tiver usado ferramentas.
 
 ## Exemplos de pedidos
 
